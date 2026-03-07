@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form method="POST">
+
+<label>Select Program</label>
+
+<select name="program">
+
+{% for p in programs %}
+
+<option value="{{p}}">{{p}}</option>
+
+{% endfor %}
+
+</select>
+
+<button type="submit">View Program</button>
+
+</form>
+
+
+{% if workout %}
+
+<h2>Workout Plan</h2>
+
+<pre>{{ workout }}</pre>
+
+{% endif %}
+
+
+{% if diet %}
+
+<h2>Diet Plan</h2>
+
+<pre>{{ diet }}</pre>
+
+{% endif %}
+
+{% endblock %}
