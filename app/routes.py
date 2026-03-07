@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request
+
 from .programs import programs
 
 main = Blueprint("main", __name__)
@@ -25,5 +26,5 @@ def index():
         programs=programs,
         selected_program=selected_program,
         workout=workout,
-        diet=diet
+        diet=diet,
     )
