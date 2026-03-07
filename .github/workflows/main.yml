@@ -61,7 +61,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t aceest-test  .
+          docker build -t aceest-test -f test.Dockerfile .
 
       - name: Run Test Suite in Container
         run: |
