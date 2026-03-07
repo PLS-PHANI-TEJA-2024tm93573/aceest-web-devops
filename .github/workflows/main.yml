@@ -64,10 +64,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Build Docker Image
+      - name: Build Test Docker Image
         run: |
           docker build -t aceest-test -f test.Dockerfile .
 
-      - name: Run Test Suite in Container
+      - name: Run Test and Generate Coverage
         run: |
-          docker run aceest-test
+          docker run --rm \
+          -v ${{ github.workspace }}:/app \
+          aceest-test
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: 
+            coverage.xml
+            htmlcov/
