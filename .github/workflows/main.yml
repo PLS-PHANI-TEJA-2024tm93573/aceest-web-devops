@@ -75,13 +75,13 @@ jobs:
           aceest-test
 
       - name: Verify Coverage Files
-        run: 
+        run: |
           ls -R
-      
+
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: 
-            coverage.xml
-            htmlcov/
+            ./coverage.xml
+            ./htmlcov/
