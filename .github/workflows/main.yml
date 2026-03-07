@@ -73,6 +73,11 @@ jobs:
           docker run --rm \
           -v ${{ github.workspace }}:/app \
           aceest-test
+
+      - name: Verify Coverage Files
+        run: 
+          ls -R
+      
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
