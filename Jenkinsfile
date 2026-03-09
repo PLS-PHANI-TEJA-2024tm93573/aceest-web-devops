@@ -42,6 +42,32 @@ pipeline {
             }
         }
 
+        stage ('Build and Push Docker Image') {
+            steps {
+                sh '''
+                docker build -t aceest-web-devops:latest .
+                docker tag aceest-web-devops:latest plsphaniteja2024tm93573/aceest-web-app-2024tm93573/aceest-web-devops:latest
+                docker push plsphaniteja2024tm93573/aceest-web-app-2024tm93573/aceest-web-devops:latest
+                '''
+            }
+        }
+
+        stage ('Build Docker Test Image') {
+            steps {
+                sh '''
+                docker build -t aceest-web-devops-test:latest -f test.Dockerfile .
+                '''
+            }
+        }
+
+        stage ('Run Tests in Docker Container') {
+                steps {
+                    sh '''
+                    docker run --rm aceest-web-devops-test:latest --name aceest-web-devops-test
+                    '''
+                }
+        }
+
 
     }
 
