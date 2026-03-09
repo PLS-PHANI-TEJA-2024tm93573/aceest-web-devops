@@ -1,19 +1,20 @@
 pipeline {
 
-    agent any 
+    agent any
 
+    environment {
+        IMAGE_NAME = "plsphaniteja2024tm93573/aceest-web-app-2024tm93573"
+    }
 
     stages {
 
-        stage ('Checkout Code') {
-
+        stage('Checkout Code') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/PLS-PHANI-TEJA-2024tm93573/aceest-web-devops.git'
+                checkout scm
             }
-
         }
-        stage ('Create Environment') {
+
+        stage('Create Python Environment') {
             steps {
                 sh '''
                 python3 -m venv venv
@@ -23,8 +24,7 @@ pipeline {
             }
         }
 
-
-        stage ('Lint Check') {
+        stage('Lint Check') {
             steps {
                 sh '''
                 . venv/bin/activate
@@ -33,26 +33,25 @@ pipeline {
             }
         }
 
-        stage ('Build Validation') {
+        stage('Build Validation') {
             steps {
                 sh '''
                 . venv/bin/activate
-                python -m py_compile app/*py
+                python -m py_compile app/*.py
                 '''
             }
         }
 
-        stage ('Build and Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
                 docker build -t aceest-web-devops:latest .
-                docker tag aceest-web-devops:latest plsphaniteja2024tm93573/aceest-web-app-2024tm93573:${env.GIT_TAG}
-                docker push plsphaniteja2024tm93573/aceest-web-app-2024tm93573:${env.GIT_TAG}
+                echo "Docker image built successfully"
                 '''
             }
         }
 
-        stage ('Build Docker Test Image') {
+        stage('Build Docker Test Image') {
             steps {
                 sh '''
                 docker build -t aceest-web-devops-test:latest -f test.Dockerfile .
@@ -60,14 +59,29 @@ pipeline {
             }
         }
 
-        stage ('Run Tests in Docker Container') {
-                steps {
-                    sh '''
-                    docker run --rm aceest-web-devops-test:latest
-                    '''
-                }
+        stage('Run Tests in Docker Container') {
+            steps {
+                sh '''
+                docker run --rm aceest-web-devops-test:latest
+                '''
+            }
         }
 
+        stage('Push Docker Image (Tags Only)') {
+
+            when {
+                buildingTag()
+            }
+
+            steps {
+                sh '''
+                echo "Tag detected: $TAG_NAME"
+
+                docker tag aceest-web-devops:latest $IMAGE_NAME:$TAG_NAME
+                docker push $IMAGE_NAME:$TAG_NAME
+                '''
+            }
+        }
 
     }
 
