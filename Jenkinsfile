@@ -17,7 +17,7 @@ pipeline {
             steps {
                 sh '''
                 python3 -m venv venv
-                source venv/bin/activate
+                . venv/bin/activate
                 pip install -r requirements.txt
                 '''
             }
@@ -27,7 +27,7 @@ pipeline {
         stage ('Lint Check') {
             steps {
                 sh '''
-                source venv/bin/activate
+                . venv/bin/activate
                 flake8 .
                 '''
             }
@@ -36,7 +36,7 @@ pipeline {
         stage ('Build Validation') {
             steps {
                 sh '''
-                source venv/bin/activate
+                . venv/bin/activate
                 python -m py_compile app/*py
                 '''
             }
