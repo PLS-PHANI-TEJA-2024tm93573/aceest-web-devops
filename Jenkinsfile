@@ -9,7 +9,7 @@ pipeline {
 
             steps {
                 git branch: 'main'
-                    url:'https://github.com/PLS-PHANI-TEJA-2024tm93573/aceest-web-devops.git'
+                    url: 'https://github.com/PLS-PHANI-TEJA-2024tm93573/aceest-web-devops.git'
             }
 
         }
