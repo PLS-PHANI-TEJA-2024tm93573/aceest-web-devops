@@ -8,9 +8,24 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout Repository') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Checkout Latest Tag') {
+            steps {
+                script {
+                    env.LATEST_TAG = sh(
+                        script: "git describe --tags \$(git rev-list --tags --max-count=1)",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Latest tag detected: ${env.LATEST_TAG}"
+
+                    sh "git checkout ${env.LATEST_TAG}"
+                }
             }
         }
 
@@ -46,7 +61,6 @@ pipeline {
             steps {
                 sh '''
                 docker build -t aceest-web-devops:latest .
-                echo "Docker image built successfully"
                 '''
             }
         }
@@ -67,22 +81,16 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image (Tags Only)') {
-
-            when {
-                buildingTag()
-            }
-
+        stage('Push Docker Image') {
             steps {
                 sh '''
-                echo "Tag detected: $TAG_NAME"
+                echo "Pushing Docker image with tag: $LATEST_TAG"
 
-                docker tag aceest-web-devops:latest $IMAGE_NAME:$TAG_NAME
-                docker push $IMAGE_NAME:$TAG_NAME
+                docker tag aceest-web-devops:latest $IMAGE_NAME:$LATEST_TAG
+                docker push $IMAGE_NAME:$LATEST_TAG
                 '''
             }
         }
 
     }
-
 }
