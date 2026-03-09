@@ -46,8 +46,8 @@ pipeline {
             steps {
                 sh '''
                 docker build -t aceest-web-devops:latest .
-                docker tag aceest-web-devops:latest plsphaniteja2024tm93573/aceest-web-app-2024tm93573:${env.GIT_TAG}
-                docker push plsphaniteja2024tm93573/aceest-web-app-2024tm93573:${env.GIT_TAG}
+                docker tag aceest-web-devops:latest plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$GIT_TAG
+                docker push plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$GIT_TAG
                 '''
             }
         }
