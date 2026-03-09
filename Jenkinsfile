@@ -63,7 +63,7 @@ pipeline {
         stage ('Run Tests in Docker Container') {
                 steps {
                     sh '''
-                    docker run --rm aceest-web-devops-test:latest --name aceest-web-devops-test
+                    docker run --rm aceest-web-devops-test:latest
                     '''
                 }
         }
