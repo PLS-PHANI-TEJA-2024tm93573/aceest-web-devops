@@ -8,7 +8,8 @@ pipeline {
         stage ('Checkout Code') {
 
             steps {
-                git 'https://github.com/PLS-PHANI-TEJA-2024tm93573/aceest-web-devops.git'
+                git branch: 'main'
+                    url:'https://github.com/PLS-PHANI-TEJA-2024tm93573/aceest-web-devops.git'
             }
 
         }
