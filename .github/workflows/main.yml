@@ -6,10 +6,11 @@ on:
       - main
       - release/*
       - feature/*
+    tags:
+      - 'v*.*.*'
   pull_request:
     branches: 
       - main
-      - release/*
 
 jobs:
 
@@ -50,7 +51,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t aceest-test .
+          docker build -t aceest-test:${{ github.ref_name }} .
 
 
 
