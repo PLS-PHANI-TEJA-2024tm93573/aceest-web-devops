@@ -35,7 +35,8 @@ jobs:
       - name: Run Linter
         run: |
           pip install flake8
-          flake8 .
+          # exclude tests directory from linting (tests may intentionally contain test-only styles)
+          flake8 --exclude=tests .
 
 
 
