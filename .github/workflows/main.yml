@@ -51,7 +51,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t aceest-test:${{ github.ref_name }} .
+          docker build -t aceest-test:${{ contains(github.ref, 'feature/') && github.sha || 'latest' }} .
 
 
 
