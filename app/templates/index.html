@@ -4,38 +4,57 @@
 
 <form method="POST">
 
-<label>Select Program</label>
+	<div>
+		<label for="name">Name</label>
+		<input id="name" name="name" type="text" value="{{ name or '' }}">
+	</div>
 
-<select name="program">
+	<div>
+		<label for="age">Age</label>
+		<input id="age" name="age" type="number" min="0" value="{{ age or '' }}">
+	</div>
 
-{% for p in programs %}
+	<div>
+		<label for="weight">Weight (kg)</label>
+		<input id="weight" name="weight" type="number" step="0.1" value="{{ weight or '' }}">
+	</div>
 
-<option value="{{p}}">{{p}}</option>
+	<div>
+		<label for="adherence">Weekly Adherence (%)</label>
+		<input id="adherence" name="adherence" type="range" min="0" max="100" value="{{ adherence or 0 }}" oninput="this.nextElementSibling.value = this.value">
+		<output>{{ adherence or 0 }}</output>
+	</div>
 
-{% endfor %}
+	<div>
+		<label for="program">Select Program</label>
+		<select id="program" name="program">
+			<option value="">-- choose --</option>
+			{% for p in programs %}
+			<option value="{{ p }}" {% if p == selected_program %}selected{% endif %}>{{ p }}</option>
+			{% endfor %}
+		</select>
+	</div>
 
-</select>
-
-<button type="submit">View Program</button>
+	<div>
+		<button type="submit">View / Save Client</button>
+		<button type="reset">Reset</button>
+	</div>
 
 </form>
 
 
-{% if workout %}
-
-<h2>Workout Plan</h2>
-
-<pre>{{ workout }}</pre>
-
+{% if calories %}
+	<h3 style="color: {{ color|default('#d4af37') }};">Estimated Calories: {{ calories }} kcal</h3>
 {% endif %}
 
+{% if workout %}
+	<h2 style="color: {{ color|default('black') }};">Workout Plan</h2>
+	<pre>{{ workout }}</pre>
+{% endif %}
 
 {% if diet %}
-
-<h2>Diet Plan</h2>
-
-<pre>{{ diet }}</pre>
-
+	<h2>Diet Plan</h2>
+	<pre>{{ diet }}</pre>
 {% endif %}
 
 {% endblock %}
