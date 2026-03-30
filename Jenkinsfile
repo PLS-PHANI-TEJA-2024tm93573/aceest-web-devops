@@ -43,7 +43,8 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                flake8 --exclude=tests .
+                # Use flake8 without overriding the configured excludes in setup.cfg
+                flake8 .
                 '''
             }
         }
