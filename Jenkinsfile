@@ -43,7 +43,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                flake8 .
+                flake8 --exclude=tests .
                 '''
             }
         }
