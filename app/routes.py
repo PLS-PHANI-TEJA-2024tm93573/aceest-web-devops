@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, jsonify, Response
-import io
 import csv
+import io
 
-from .programs import programs
+from flask import Blueprint, Response, jsonify, render_template, request
+
 from .models import add_client, get_clients
+from .programs import programs
 
 main = Blueprint("main", __name__)
 
@@ -96,7 +97,6 @@ def index():
     )
 
 
-
 @main.route("/export_csv")
 def export_csv():
     """Return a CSV file download of all clients."""
@@ -105,14 +105,16 @@ def export_csv():
     writer = csv.writer(si)
     writer.writerow(["Name", "Age", "Weight", "Program", "Adherence", "Notes"])
     for c in clients:
-        writer.writerow([
-            c.get("name", ""),
-            c.get("age", ""),
-            c.get("weight", ""),
-            c.get("program", ""),
-            c.get("adherence", ""),
-            c.get("notes", ""),
-        ])
+        writer.writerow(
+            [
+                c.get("name", ""),
+                c.get("age", ""),
+                c.get("weight", ""),
+                c.get("program", ""),
+                c.get("adherence", ""),
+                c.get("notes", ""),
+            ]
+        )
 
     output = si.getvalue()
     headers = {

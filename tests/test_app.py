@@ -48,7 +48,9 @@ def test_post_select_program_with_weight(client):
 
 
 def test_post_invalid_weight(client):
-    resp = client.post("/", data={"program": "Muscle Gain (MG)", "weight": "not-a-number"})
+    resp = client.post(
+        "/", data={"program": "Muscle Gain (MG)", "weight": "not-a-number"}
+    )
     assert resp.status_code == 200
     # invalid weight should not produce calories
     assert b"Estimated Calories" not in resp.data
@@ -70,4 +72,3 @@ def test_form_preserves_fields(client):
     assert b'value="82"' in resp.data
     # adherence value should be rendered inside an <output>
     assert b">70<" in resp.data
-
