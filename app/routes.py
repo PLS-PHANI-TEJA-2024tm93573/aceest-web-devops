@@ -1,6 +1,9 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify, Response
+import io
+import csv
 
 from .programs import programs
+from .models import add_client, get_clients
 
 main = Blueprint("main", __name__)
 
@@ -17,6 +20,7 @@ def index():
     adherence = None
     calories = None
     color = None
+    notes = None
 
     if request.method == "POST":
 
@@ -25,6 +29,7 @@ def index():
         age = request.form.get("age")
         weight = request.form.get("weight")
         adherence = request.form.get("adherence")
+        notes = request.form.get("notes")
 
         selected_program = request.form.get("program")
 
@@ -44,6 +49,36 @@ def index():
             if w > 0 and calorie_factor:
                 calories = int(w * calorie_factor)
 
+        # Build client record and save
+        try:
+            age_i = int(age) if age not in (None, "") else None
+        except ValueError:
+            age_i = None
+
+        try:
+            weight_f = float(weight) if weight not in (None, "") else None
+        except ValueError:
+            weight_f = None
+
+        try:
+            adherence_i = int(adherence) if adherence not in (None, "") else 0
+        except ValueError:
+            adherence_i = 0
+
+        client = {
+            "name": name or "",
+            "age": age_i,
+            "weight": weight_f,
+            "program": selected_program or "",
+            "adherence": adherence_i,
+            "notes": notes or "",
+        }
+
+        add_client(client)
+
+    # Always provide the current clients list to the template
+    clients = get_clients()
+
     return render_template(
         "index.html",
         programs=programs,
@@ -56,4 +91,41 @@ def index():
         adherence=adherence,
         calories=calories,
         color=color,
+        notes=notes,
+        clients=clients,
     )
+
+
+
+@main.route("/export_csv")
+def export_csv():
+    """Return a CSV file download of all clients."""
+    clients = get_clients()
+    si = io.StringIO()
+    writer = csv.writer(si)
+    writer.writerow(["Name", "Age", "Weight", "Program", "Adherence", "Notes"])
+    for c in clients:
+        writer.writerow([
+            c.get("name", ""),
+            c.get("age", ""),
+            c.get("weight", ""),
+            c.get("program", ""),
+            c.get("adherence", ""),
+            c.get("notes", ""),
+        ])
+
+    output = si.getvalue()
+    headers = {
+        "Content-Disposition": "attachment; filename=clients.csv",
+        "Content-Type": "text/csv; charset=utf-8",
+    }
+    return Response(output, headers=headers)
+
+
+@main.route("/clients/data")
+def clients_data():
+    """Return minimal JSON for charting: names and adherence list."""
+    clients = get_clients()
+    names = [c.get("name", "") for c in clients]
+    adherence = [c.get("adherence", 0) for c in clients]
+    return jsonify({"names": names, "adherence": adherence})

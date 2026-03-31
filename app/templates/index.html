@@ -26,6 +26,11 @@
 	</div>
 
 	<div>
+		<label for="notes">Coach Notes</label>
+		<input id="notes" name="notes" type="text" value="{{ notes or '' }}">
+	</div>
+
+	<div>
 		<label for="program">Select Program</label>
 		<select id="program" name="program">
 			<option value="">-- choose --</option>
@@ -38,6 +43,7 @@
 	<div>
 		<button type="submit">View / Save Client</button>
 		<button type="reset">Reset</button>
+		<a href="{{ url_for('main.export_csv') }}" class="button">Export CSV</a>
 	</div>
 
 </form>
@@ -55,6 +61,61 @@
 {% if diet %}
 	<h2>Diet Plan</h2>
 	<pre>{{ diet }}</pre>
+{% endif %}
+
+
+{% if clients and clients|length > 0 %}
+	<h2>Saved Clients</h2>
+	<table>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Age</th>
+				<th>Weight</th>
+				<th>Program</th>
+				<th>Adherence</th>
+				<th>Notes</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for c in clients %}
+			<tr>
+				<td>{{ c.name }}</td>
+				<td>{{ c.age or '' }}</td>
+				<td>{{ c.weight or '' }}</td>
+				<td>{{ c.program }}</td>
+				<td>{{ c.adherence }}</td>
+				<td>{{ c.notes }}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>Progress Chart</h2>
+	<canvas id="progressChart" width="600" height="300"></canvas>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+		fetch("{{ url_for('main.clients_data') }}")
+			.then(r => r.json())
+			.then(data => {
+				const ctx = document.getElementById('progressChart').getContext('2d');
+				new Chart(ctx, {
+					type: 'bar',
+					data: {
+						labels: data.names,
+						datasets: [{
+							label: 'Adherence %',
+							data: data.adherence,
+							backgroundColor: '#d4af37'
+						}]
+					},
+					options: {scales: {y: {beginAtZero: true, max: 100}}}
+				});
+			})
+			.catch(err => console.error('Chart load error', err));
+	</script>
+
 {% endif %}
 
 {% endblock %}
