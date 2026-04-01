@@ -10,13 +10,7 @@ pipeline {
 
         stage('Checkout Repository') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${params.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[
-                    url: 'https://github.com/PLS-PHANI-TEJA-2024tm93573/aceest-web-devops.git'
-    ]]
-])
+                checkout scm
             }
         }
 
@@ -75,8 +69,7 @@ pipeline {
 
         stage('Push Docker Image') {
             when {
-                expression {
-                return env.BRANCH_NAME == 'main' || env.GIT_BRANCH?.contains('main')
+                branch 'main'
            }
         }
             steps {
