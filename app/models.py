@@ -2,7 +2,6 @@ import os
 import sqlite3
 from typing import Any, Dict, List, Optional
 
-
 # DB_NAME can be overridden by the ACEEST_DB_PATH environment variable (set in test mode)
 DB_NAME = os.environ.get(
     "ACEEST_DB_PATH",

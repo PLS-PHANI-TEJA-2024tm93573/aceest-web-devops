@@ -1,7 +1,7 @@
-
 import csv
 import io
 from datetime import datetime
+
 from flask import (
     Blueprint,
     Response,
@@ -12,9 +12,9 @@ from flask import (
     request,
     url_for,
 )
+
 from .models import add_client, get_clients, save_progress
 from .programs import programs
-
 
 main = Blueprint("main", __name__)
 
