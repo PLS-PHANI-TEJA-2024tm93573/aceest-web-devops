@@ -21,6 +21,7 @@ def get_db_conn():
 def init_db():
     conn = get_db_conn()
     cur = conn.cursor()
+    # Add adherence column if missing (backward compatibility)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,9 +29,15 @@ def init_db():
             age INTEGER,
             weight REAL,
             program TEXT,
-            calories INTEGER
+            calories INTEGER,
+            adherence INTEGER DEFAULT 0
         )
     """)
+    # Try to add adherence column if it doesn't exist (for old DBs)
+    try:
+        cur.execute("ALTER TABLE clients ADD COLUMN adherence INTEGER DEFAULT 0")
+    except sqlite3.OperationalError:
+        pass
     cur.execute("""
         CREATE TABLE IF NOT EXISTS progress (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,24 +50,47 @@ def init_db():
     conn.close()
 
 
+
 def add_client(client: Dict[str, Any]) -> None:
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT OR REPLACE INTO clients (name, age, weight, program, calories)
-        VALUES (?, ?, ?, ?, ?)
-    """,
-        (
-            client.get("name"),
-            client.get("age"),
-            client.get("weight"),
-            client.get("program"),
-            client.get("calories"),
-        ),
-    )
+    # Check if client exists
+    cur.execute("SELECT id FROM clients WHERE name=?", (client.get("name"),))
+    row = cur.fetchone()
+    if row:
+        # Update existing client
+        cur.execute(
+            """
+            UPDATE clients SET age=?, weight=?, program=?, calories=?, adherence=? WHERE name=?
+            """,
+            (
+                client.get("age"),
+                client.get("weight"),
+                client.get("program"),
+                client.get("calories"),
+                client.get("adherence", 0),
+                client.get("name"),
+            ),
+        )
+    else:
+        # Insert new client
+        cur.execute(
+            """
+            INSERT INTO clients (name, age, weight, program, calories, adherence)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                client.get("name"),
+                client.get("age"),
+                client.get("weight"),
+                client.get("program"),
+                client.get("calories"),
+                client.get("adherence", 0),
+            ),
+        )
     conn.commit()
     conn.close()
+
 
 
 def get_clients() -> List[Dict[str, Any]]:
@@ -70,6 +100,14 @@ def get_clients() -> List[Dict[str, Any]]:
     rows = cur.fetchall()
     clients = []
     for row in rows:
+        # get latest adherence from progress table (adherence is stored per-week in progress)
+        cur.execute(
+            "SELECT adherence FROM progress WHERE client_name=? ORDER BY week DESC LIMIT 1",
+            (row["name"],),
+        )
+        prog_row = cur.fetchone()
+        adherence = prog_row["adherence"] if prog_row else 0
+
         clients.append(
             {
                 "id": row["id"],
@@ -78,6 +116,8 @@ def get_clients() -> List[Dict[str, Any]]:
                 "weight": row["weight"],
                 "program": row["program"],
                 "calories": row["calories"],
+                "adherence": adherence,
+                "notes": row["notes"] if "notes" in row.keys() else "",
             }
         )
     conn.close()
@@ -111,6 +151,7 @@ def clear_clients() -> None:
 
 
 def save_progress(client_name: str, week: str, adherence: int) -> None:
+    print(f"Saving progress for {client_name} - Week: {week}, Adherence: {adherence}")
     conn = get_db_conn()
     cur = conn.cursor()
     cur.execute(
