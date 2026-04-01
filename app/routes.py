@@ -1,10 +1,10 @@
 import csv
 import io
 
-from flask import Blueprint, Response, jsonify, render_template, request
+from flask import Blueprint, Response
+from flask import jsonify, render_template, request
 
-from .models import add_client, get_clients, save_to_file
-from flask import current_app
+from .models import add_client, get_clients
 from .programs import programs
 
 main = Blueprint("main", __name__)
@@ -78,13 +78,7 @@ def index():
 
         add_client(client)
         # persist to configured path if available
-        try:
-            path = current_app.config.get("CLIENTS_DATA_PATH")
-            if path:
-                save_to_file(path)
-        except Exception:
-            # don't let persistence errors break the request
-            pass
+        # Persistence is now handled by SQLite; no file save needed
 
     # Always provide the current clients list to the template
     clients = get_clients()
