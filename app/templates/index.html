@@ -1,3 +1,24 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		<ul class="flashes">
+		{% for category, message in messages %}
+			<li class="{{ category }}">{{ message }}</li>
+		{% endfor %}
+		</ul>
+	{% endif %}
+{% endwith %}
+{% if name and program and calories %}
+<div style="background:#222; color:#d4af37; padding:1em; margin:1em 0; border-radius:8px; max-width:400px;">
+	<h3>CLIENT PROFILE</h3>
+	<pre style="color:#fff; background:none; border:none; font-size:1em;">
+Name     : {{ name }}
+Age      : {{ age }}
+Weight   : {{ weight }} kg
+Program  : {{ program }}
+Calories : {{ calories }} kcal/day
+	</pre>
+</div>
+{% endif %}
 {% extends "base.html" %}
 
 {% block content %}
@@ -46,6 +67,20 @@
 		<a href="{{ url_for('main.export_csv') }}" class="button">Export CSV</a>
 	</div>
 
+
+</form>
+
+<form method="POST" action="{{ url_for('main.save_progress_route') }}" style="margin-top:2em;">
+	<h3>Log Weekly Progress</h3>
+	<div>
+		<label for="progress_name">Client Name</label>
+		<input id="progress_name" name="progress_name" type="text" required>
+	</div>
+	<div>
+		<label for="progress_adherence">Adherence (%)</label>
+		<input id="progress_adherence" name="progress_adherence" type="number" min="0" max="100" value="0">
+	</div>
+	<button type="submit">Save Progress</button>
 </form>
 
 
@@ -73,6 +108,7 @@
 				<th>Age</th>
 				<th>Weight</th>
 				<th>Program</th>
+				<th>Calories</th>
 				<th>Adherence</th>
 				<th>Notes</th>
 			</tr>
@@ -84,6 +120,7 @@
 				<td>{{ c.age or '' }}</td>
 				<td>{{ c.weight or '' }}</td>
 				<td>{{ c.program }}</td>
+				<td>{{ c.calories or '' }}</td>
 				<td>{{ c.adherence }}</td>
 				<td>{{ c.notes }}</td>
 			</tr>

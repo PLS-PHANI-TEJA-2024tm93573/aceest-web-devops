@@ -1,10 +1,19 @@
 import csv
 import io
+from datetime import datetime
 
-from flask import Blueprint, Response, jsonify, render_template, request
+from flask import (
+    Blueprint,
+    Response,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
-from .models import add_client, get_clients, save_to_file
-from flask import current_app
+from .models import add_client, get_clients, save_progress
 from .programs import programs
 
 main = Blueprint("main", __name__)
@@ -12,7 +21,6 @@ main = Blueprint("main", __name__)
 
 @main.route("/", methods=["GET", "POST"])
 def index():
-
     selected_program = None
     workout = None
     diet = None
@@ -25,14 +33,12 @@ def index():
     notes = None
 
     if request.method == "POST":
-
         # Client fields
         name = request.form.get("name")
         age = request.form.get("age")
         weight = request.form.get("weight")
         adherence = request.form.get("adherence")
         notes = request.form.get("notes")
-
         selected_program = request.form.get("program")
 
         if selected_program in programs:
@@ -40,13 +46,11 @@ def index():
             workout = program.get("workout")
             diet = program.get("diet")
             color = program.get("color")
-
             # Estimate calories if weight supplied and calorie_factor exists
             try:
                 w = float(weight) if weight not in (None, "") else 0
             except ValueError:
                 w = 0
-
             calorie_factor = program.get("calorie_factor")
             if w > 0 and calorie_factor:
                 calories = int(w * calorie_factor)
@@ -56,17 +60,14 @@ def index():
             age_i = int(age) if age not in (None, "") else None
         except ValueError:
             age_i = None
-
         try:
             weight_f = float(weight) if weight not in (None, "") else None
         except ValueError:
             weight_f = None
-
         try:
             adherence_i = int(adherence) if adherence not in (None, "") else 0
         except ValueError:
             adherence_i = 0
-
         client = {
             "name": name or "",
             "age": age_i,
@@ -74,17 +75,9 @@ def index():
             "program": selected_program or "",
             "adherence": adherence_i,
             "notes": notes or "",
+            "calories": calories,
         }
-
         add_client(client)
-        # persist to configured path if available
-        try:
-            path = current_app.config.get("CLIENTS_DATA_PATH")
-            if path:
-                save_to_file(path)
-        except Exception:
-            # don't let persistence errors break the request
-            pass
 
     # Always provide the current clients list to the template
     clients = get_clients()
@@ -104,6 +97,24 @@ def index():
         notes=notes,
         clients=clients,
     )
+
+
+@main.route("/save_progress", methods=["POST"])
+def save_progress_route():
+    name = request.form.get("progress_name")
+    adherence = request.form.get("progress_adherence")
+    if not name:
+        flash("Client name required to save progress", "error")
+        return redirect(url_for("main.index"))
+    try:
+        adherence_i = int(adherence) if adherence not in (None, "") else 0
+    except ValueError:
+        adherence_i = 0
+    week = datetime.now().strftime("Week %U - %Y")
+    print(f"Received progress for {name} - Week: {week}, Adherence: {adherence_i}")
+    save_progress(name, week, adherence_i)
+    flash("Weekly progress logged", "success")
+    return redirect(url_for("main.index"))
 
 
 @main.route("/export_csv")
@@ -138,5 +149,13 @@ def clients_data():
     """Return minimal JSON for charting: names and adherence list."""
     clients = get_clients()
     names = [c.get("name", "") for c in clients]
-    adherence = [c.get("adherence", 0) for c in clients]
+    # Ensure adherence is always int and matches the latest client form value
+    adherence = []
+    for c in clients:
+        adh = c.get("adherence", 0)
+        try:
+            adh = int(adh)
+        except Exception:
+            adh = 0
+        adherence.append(adh)
     return jsonify({"names": names, "adherence": adherence})

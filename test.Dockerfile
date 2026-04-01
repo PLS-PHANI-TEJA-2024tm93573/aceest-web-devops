@@ -7,8 +7,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Prevent output buffering
 ENV PYTHONUNBUFFERED=1
 
+
 # Set working directory
 WORKDIR /app
+
+# Ensure /tmp is writable for SQLite test DB
+RUN mkdir -p /tmp && chmod 1777 /tmp
 
 # Install system dependencies (optional but common for CI images)
 RUN apt-get update && apt-get install -y \
