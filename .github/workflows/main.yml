@@ -97,6 +97,7 @@ jobs:
         run: |
           QUEUE_URL=$(curl -i -X POST "http://localhost:8081/job/accest-build/build" \
           --user "${{ secrets.JENKINS_USER }}:${{ secrets.JENKINS_TOKEN }}" \
+          --data-urlencode "BRANCH_NAME=${GITHUB_REF#refs/heads/}" \
           | grep -i Location | awk '{print $2}' | tr -d '\r')
 
           echo "Queue URL: $QUEUE_URL"
