@@ -74,6 +74,7 @@ def index():
             "program": selected_program or "",
             "adherence": adherence_i,
             "notes": notes or "",
+            "calories": calories,
         }
 
         add_client(client)
