@@ -69,8 +69,10 @@ pipeline {
 
         stage('Push Docker Image') {
             when {
-                branch 'main'
-            }
+                expression {
+                return env.BRANCH_NAME == 'main' || env.GIT_BRANCH?.contains('main')
+           }
+        }
             steps {
                 sh '''
                 echo "Pushing Docker image as dev-latest..."
