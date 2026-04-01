@@ -50,7 +50,6 @@ def init_db():
     conn.close()
 
 
-
 def add_client(client: Dict[str, Any]) -> None:
     conn = get_db_conn()
     cur = conn.cursor()
@@ -108,7 +107,6 @@ def add_client(client: Dict[str, Any]) -> None:
         )
     conn.commit()
     conn.close()
-
 
 
 def get_clients() -> List[Dict[str, Any]]:
@@ -180,8 +178,7 @@ def get_progress(client_name: str) -> List[Dict[str, Any]]:
     conn = get_db_conn()
     cur = conn.cursor()
     cur.execute(
-        "SELECT * FROM progress WHERE client_name=? ORDER BY week DESC",
-        (client_name,)
+        "SELECT * FROM progress WHERE client_name=? ORDER BY week DESC", (client_name,)
     )
     rows = cur.fetchall()
     progress = []

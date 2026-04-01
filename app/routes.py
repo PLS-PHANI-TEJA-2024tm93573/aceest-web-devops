@@ -1,10 +1,20 @@
+
 import csv
 import io
 from datetime import datetime
-from flask import flash, redirect, url_for, request
+from flask import (
+    Blueprint,
+    Response,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from .models import add_client, get_clients, save_progress
 from .programs import programs
-from flask import Blueprint, Response, jsonify, render_template
+
 
 main = Blueprint("main", __name__)
 
@@ -88,15 +98,6 @@ def index():
         clients=clients,
     )
 
-import csv
-import io
-from datetime import datetime
-from flask import flash, redirect, url_for, request
-from .models import add_client, get_clients, save_progress
-from .programs import programs
-from flask import Blueprint, Response, jsonify, render_template
-
-
 
 @main.route("/save_progress", methods=["POST"])
 def save_progress_route():
@@ -114,7 +115,6 @@ def save_progress_route():
     save_progress(name, week, adherence_i)
     flash("Weekly progress logged", "success")
     return redirect(url_for("main.index"))
-
 
 
 @main.route("/export_csv")

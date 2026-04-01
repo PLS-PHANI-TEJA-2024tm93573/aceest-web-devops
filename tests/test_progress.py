@@ -1,5 +1,7 @@
 import pytest
+
 from app.models import clear_clients, get_clients
+
 
 def test_progress_logging(client):
     clear_clients()
@@ -10,15 +12,12 @@ def test_progress_logging(client):
         "weight": "80",
         "adherence": "60",
         "program": "Muscle Gain (MG)",
-        "notes": "Initial"
+        "notes": "Initial",
     }
     resp = client.post("/", data=payload)
     assert resp.status_code == 200
     # Log progress
-    progress_payload = {
-        "progress_name": "ProgressUser",
-        "progress_adherence": "75"
-    }
+    progress_payload = {"progress_name": "ProgressUser", "progress_adherence": "75"}
     resp2 = client.post("/save_progress", data=progress_payload, follow_redirects=True)
     assert resp2.status_code == 200
     assert b"Weekly progress logged" in resp2.data
@@ -33,10 +32,14 @@ def test_progress_logging(client):
     assert found
     assert found[0]["adherence"] == 90
 
+
 def test_progress_logging_missing_name(client):
-    resp = client.post("/save_progress", data={"progress_adherence": "80"}, follow_redirects=True)
+    resp = client.post(
+        "/save_progress", data={"progress_adherence": "80"}, follow_redirects=True
+    )
     assert resp.status_code == 200
     assert b"Client name required to save progress" in resp.data
+
 
 def test_duplicate_client_update(client):
     clear_clients()
@@ -46,7 +49,7 @@ def test_duplicate_client_update(client):
         "weight": "70",
         "adherence": "50",
         "program": "Beginner (BG)",
-        "notes": "First"
+        "notes": "First",
     }
     client.post("/", data=payload)
     # Post again with new adherence
@@ -60,6 +63,7 @@ def test_duplicate_client_update(client):
     # Only one entry in DB
     assert len(found) == 1
 
+
 def test_invalid_adherence(client):
     clear_clients()
     payload = {
@@ -68,7 +72,7 @@ def test_invalid_adherence(client):
         "weight": "60",
         "adherence": "notanumber",
         "program": "Fat Loss (FL)",
-        "notes": "Test"
+        "notes": "Test",
     }
     resp = client.post("/", data=payload)
     assert resp.status_code == 200
