@@ -80,7 +80,7 @@ data/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-devops-code-versions/
+
 
 # IPython
 profile_default/
