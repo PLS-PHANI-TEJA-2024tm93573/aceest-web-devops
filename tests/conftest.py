@@ -10,15 +10,16 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app import create_app
 from app.models import init_db, clear_clients
 
+test_db_dir = tempfile.mkdtemp()
+test_db_path = os.path.join(test_db_dir, "test.db")
+os.environ["ACEEST_DB_PATH"] = test_db_path
 
 @pytest.fixture
 def app():
     # Create a temporary directory for test database
-    test_db_dir = tempfile.mkdtemp()
-    test_db_path = os.path.join(test_db_dir, "test.db")
+
     
     # Set environment variable BEFORE creating app
-    os.environ["ACEEST_DB_PATH"] = test_db_path
     
     app = create_app()
     app.config.update({"TESTING": True})
