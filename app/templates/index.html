@@ -23,41 +23,40 @@ Calories : {{ calories }} kcal/day
 
 {% block content %}
 
-<form method="POST">
-
-	<div>
+<form method="POST" class="client-form">
+	<div class="form-row">
 		<label for="name">Name</label>
-		<input id="name" name="name" type="text" value="{{ name or '' }}">
+		<input id="name" name="name" type="text" value="{{ name or '' }}" required>
 	</div>
-
-	<div>
+	<div class="form-row">
 		<label for="age">Age</label>
-		<input id="age" name="age" type="number" min="0" value="{{ age or '' }}">
+		<input id="age" name="age" type="number" min="0" value="{{ age or '' }}" required>
 	</div>
-
-	<div>
+	<div class="form-row">
 		<label for="weight">Weight (kg)</label>
-		<input id="weight" name="weight" type="number" step="0.1" value="{{ weight or '' }}">
+		<input id="weight" name="weight" type="number" step="0.1" value="{{ weight or '' }}" required>
 	</div>
-
-	<div>
+	<div class="form-row">
 		<label for="adherence">Weekly Adherence (%)</label>
 		<input id="adherence" name="adherence" type="range" min="0" max="100" value="{{ adherence or 0 }}" oninput="this.nextElementSibling.value = this.value">
 		<output>{{ adherence or 0 }}</output>
 	</div>
-
-	<div>
+	<div class="form-row">
 		<label for="notes">Coach Notes</label>
 		<input id="notes" name="notes" type="text" value="{{ notes or '' }}">
 	</div>
-
-	<div>
+	<div class="form-row">
 		<label for="program">Select Program</label>
-		<select id="program" name="program">
+		<select id="program" name="program" required>
 			<option value="">-- choose --</option>
 			{% for p in programs %}
 			<option value="{{ p }}" {% if p == selected_program %}selected{% endif %}>{{ p }}</option>
 			{% endfor %}
+		</select>
+	</div>
+	<div class="form-row">
+		<button type="submit" class="btn-primary">Save Client</button>
+	</div>
 		</select>
 	</div>
 

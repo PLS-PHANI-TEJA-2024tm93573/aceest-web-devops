@@ -1,14 +1,98 @@
-body{
-
-background:#1a1a1a;
-color:white;
-font-family:Arial;
-padding:40px;
-
+body {
+	background: #181818;
+	color: #f5f5f5;
+	font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+	margin: 0;
+	padding: 0;
 }
 
-h1{
+header {
+	background: #232323;
+	padding: 32px 0 16px 0;
+	text-align: center;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
 
-color:#d4af37;
+h1 {
+	color: #d4af37;
+	font-size: 2.5em;
+	margin: 0;
+	letter-spacing: 1px;
+}
 
+main {
+	max-width: 600px;
+	margin: 40px auto;
+	background: #232323;
+	border-radius: 16px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+	padding: 32px 32px 24px 32px;
+}
+
+.client-form {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.form-row {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+label {
+	font-weight: 600;
+	color: #d4af37;
+	margin-bottom: 2px;
+}
+
+input, select, textarea {
+	background: #292929;
+	color: #f5f5f5;
+	border: 1px solid #444;
+	border-radius: 6px;
+	padding: 8px 10px;
+	font-size: 1em;
+	outline: none;
+	transition: border 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+	border: 1.5px solid #d4af37;
+}
+
+button.btn-primary {
+	background: linear-gradient(90deg, #d4af37 60%, #bfa233 100%);
+	color: #181818;
+	border: none;
+	border-radius: 8px;
+	padding: 12px 0;
+	font-size: 1.1em;
+	font-weight: bold;
+	cursor: pointer;
+	margin-top: 10px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+	transition: background 0.2s, color 0.2s;
+}
+
+button.btn-primary:hover {
+	background: #bfa233;
+	color: #fff;
+}
+
+.flashes {
+	list-style: none;
+	padding: 0;
+	margin-bottom: 18px;
+}
+
+.flashes li {
+	background: #333;
+	color: #d4af37;
+	border-radius: 6px;
+	padding: 10px 16px;
+	margin-bottom: 8px;
+	font-weight: 500;
+	box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }

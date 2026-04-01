@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    image: plsphaniteja2024tm93573/aceest-web-app-2024tm93573:dev-latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+    restart: unless-stopped
