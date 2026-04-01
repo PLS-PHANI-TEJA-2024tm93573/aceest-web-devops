@@ -149,5 +149,13 @@ def clients_data():
     """Return minimal JSON for charting: names and adherence list."""
     clients = get_clients()
     names = [c.get("name", "") for c in clients]
-    adherence = [c.get("adherence", 0) for c in clients]
+    # Ensure adherence is always int and matches the latest client form value
+    adherence = []
+    for c in clients:
+        adh = c.get("adherence", 0)
+        try:
+            adh = int(adh)
+        except Exception:
+            adh = 0
+        adherence.append(adh)
     return jsonify({"names": names, "adherence": adherence})

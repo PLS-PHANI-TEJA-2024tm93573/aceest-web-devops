@@ -54,26 +54,44 @@ def init_db():
 def add_client(client: Dict[str, Any]) -> None:
     conn = get_db_conn()
     cur = conn.cursor()
-    # Check if client exists
+    # Only update adherence if present in the client form (not from progress logging)
     cur.execute("SELECT id FROM clients WHERE name=?", (client.get("name"),))
     row = cur.fetchone()
+    adherence = client.get("adherence")
+    if adherence is not None:
+        try:
+            adherence = int(adherence)
+        except (TypeError, ValueError):
+            adherence = 0
     if row:
-        # Update existing client
-        cur.execute(
-            """
-            UPDATE clients SET age=?, weight=?, program=?, calories=?, adherence=? WHERE name=?
-            """,
-            (
-                client.get("age"),
-                client.get("weight"),
-                client.get("program"),
-                client.get("calories"),
-                client.get("adherence", 0),
-                client.get("name"),
-            ),
-        )
+        if adherence is not None:
+            cur.execute(
+                """
+                UPDATE clients SET age=?, weight=?, program=?, calories=?, adherence=? WHERE name=?
+                """,
+                (
+                    client.get("age"),
+                    client.get("weight"),
+                    client.get("program"),
+                    client.get("calories"),
+                    adherence,
+                    client.get("name"),
+                ),
+            )
+        else:
+            cur.execute(
+                """
+                UPDATE clients SET age=?, weight=?, program=?, calories=? WHERE name=?
+                """,
+                (
+                    client.get("age"),
+                    client.get("weight"),
+                    client.get("program"),
+                    client.get("calories"),
+                    client.get("name"),
+                ),
+            )
     else:
-        # Insert new client
         cur.execute(
             """
             INSERT INTO clients (name, age, weight, program, calories, adherence)
@@ -85,7 +103,7 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("weight"),
                 client.get("program"),
                 client.get("calories"),
-                client.get("adherence", 0),
+                adherence if adherence is not None else 0,
             ),
         )
     conn.commit()
@@ -100,14 +118,7 @@ def get_clients() -> List[Dict[str, Any]]:
     rows = cur.fetchall()
     clients = []
     for row in rows:
-        # get latest adherence from progress table (adherence is stored per-week in progress)
-        cur.execute(
-            "SELECT adherence FROM progress WHERE client_name=? ORDER BY week DESC LIMIT 1",
-            (row["name"],),
-        )
-        prog_row = cur.fetchone()
-        adherence = prog_row["adherence"] if prog_row else 0
-
+        adherence = row["adherence"] if "adherence" in row.keys() else 0
         clients.append(
             {
                 "id": row["id"],
