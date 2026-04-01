@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 
-<html>
-
+<html lang="en">
 <head>
-
-<title>ACEest Fitness System</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ACEest Fitness System</title>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Segoe+UI:400,700|Roboto:400,700&display=swap">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
 <body>
-
-<h1>ACEest Functional Fitness</h1>
-
-{% block content %}{% endblock %}
-
+	<header>
+		<h1>ACEest Functional Fitness</h1>
+	</header>
+	<main>
+		{% block content %}{% endblock %}
+	</main>
 </body>
-
 </html>
