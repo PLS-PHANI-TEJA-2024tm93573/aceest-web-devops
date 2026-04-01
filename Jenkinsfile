@@ -14,21 +14,6 @@ pipeline {
             }
         }
 
-        stage('Checkout Latest Tag') {
-            steps {
-                script {
-                    env.LATEST_TAG = sh(
-                        script: "git describe --tags \$(git rev-list --tags --max-count=1)",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Latest tag detected: ${env.LATEST_TAG}"
-
-                    sh "git checkout ${env.LATEST_TAG}"
-                }
-            }
-        }
-
         stage('Create Python Environment') {
             steps {
                 sh '''
@@ -85,10 +70,10 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh '''
-                echo "Pushing Docker image with tag: $LATEST_TAG"
+                echo "Pushing Docker image as dev-latest..."
 
-                docker tag aceest-web-devops:latest $IMAGE_NAME:$LATEST_TAG
-                docker push $IMAGE_NAME:$LATEST_TAG
+                docker tag aceest-web-devops:latest $IMAGE_NAME:dev-latest
+                docker push $IMAGE_NAME:dev-latest
                 '''
             }
         }
