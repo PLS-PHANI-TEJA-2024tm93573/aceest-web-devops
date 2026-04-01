@@ -2,23 +2,30 @@ import os
 import sqlite3
 from typing import Any, Dict, List, Optional
 
-# DB_NAME can be overridden by the ACEEST_DB_PATH environment variable (set in test mode)
-DB_NAME = os.environ.get(
-    "ACEEST_DB_PATH",
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "data", "aceest_fitness.db")
-    ),
-)
 
-# Ensure /tmp exists if using /tmp/test.db (for CI or Docker test runs)
-if DB_NAME.startswith("/tmp/"):
-    os.makedirs("/tmp", exist_ok=True)
+# DB_NAME can be overridden by the ACEEST_DB_PATH environment variable (set in test mode)
+def get_db_path():
+    return os.environ.get(
+        "ACEEST_DB_PATH",
+        os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "data", "aceest_fitness.db")
+        ),
+    )
+
+
+print("ENV DB:", os.environ.get("ACEEST_DB_PATH"))
 
 
 def get_db_conn():
+    db_path = get_db_path()
+
+    # 🔥 critical fix for Docker/CI
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+
     print(os.path.dirname(__file__))
-    print(f"Connecting to DB at: {DB_NAME}")
-    conn = sqlite3.connect(DB_NAME)
+    print(f"Connecting to DB at: {db_path}")
+
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
