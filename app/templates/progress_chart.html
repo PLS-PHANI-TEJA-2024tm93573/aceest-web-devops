@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Progress Chart for {{ client_name }}</h2>
+{% if img_data %}
+    <img src="data:image/png;base64,{{ img_data }}" alt="Progress Chart" style="max-width:100%;height:auto;"/>
+{% else %}
+    <p>No progress data available.</p>
+{% endif %}
+<a href="{{ url_for('main.index') }}">Back to Dashboard</a>
+{% endblock %}

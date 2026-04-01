@@ -1,7 +1,9 @@
+import base64
 import csv
 import io
 from datetime import datetime
 
+import matplotlib.pyplot as plt
 from flask import (
     Blueprint,
     Response,
@@ -13,7 +15,7 @@ from flask import (
     url_for,
 )
 
-from .models import add_client, get_clients, save_progress
+from .models import add_client, get_clients, get_progress, save_progress
 from .programs import programs
 
 main = Blueprint("main", __name__)
@@ -159,3 +161,34 @@ def clients_data():
             adh = 0
         adherence.append(adh)
     return jsonify({"names": names, "adherence": adherence})
+
+
+# Route to generate and return a progress chart image for a client
+@main.route("/progress_chart/<client_name>")
+def progress_chart(client_name):
+    progress = get_progress(client_name)
+    if not progress:
+        flash("No progress data available for this client", "info")
+        return redirect(url_for("main.index"))
+
+    weeks = [p["week"] for p in reversed(progress)]
+    adherence = [p["adherence"] for p in reversed(progress)]
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(weeks, adherence, marker="o", linewidth=2)
+    plt.title(f"Weekly Adherence Progress – {client_name}")
+    plt.xlabel("Week")
+    plt.ylabel("Adherence (%)")
+    plt.ylim(0, 100)
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format="png")
+    plt.close()
+    img.seek(0)
+    img_b64 = base64.b64encode(img.getvalue()).decode()
+    return render_template(
+        "progress_chart.html", client_name=client_name, img_data=img_b64
+    )
