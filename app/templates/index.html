@@ -8,16 +8,24 @@
 	{% endif %}
 {% endwith %}
 {% if name and program and calories %}
-<div style="background:#222; color:#d4af37; padding:1em; margin:1em 0; border-radius:8px; max-width:400px;">
+<div style="background:#222; color:#d4af37; padding:1em; margin:1em 0; border-radius:8px; max-width:500px;">
 	<h3>CLIENT PROFILE</h3>
 	<pre style="color:#fff; background:none; border:none; font-size:1em;">
-Name     : {{ name }}
-Age      : {{ age }}
-Weight   : {{ weight }} kg
-Program  : {{ program }}
-Calories : {{ calories }} kcal/day
+Name           : {{ name }}
+Age            : {{ age }}
+Height         : {{ height or '-' }} cm
+Weight         : {{ weight }} kg
+Program        : {{ program }}
+Calories       : {{ calories }} kcal/day
+Target Weight  : {{ target_weight or '-' }} kg
+Target Adher.  : {{ target_adherence or '-' }} %
 	</pre>
-	<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button" style="margin-top:10px;display:inline-block;">View Progress Chart</a>
+	<div style="margin-top:10px;">
+	<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button">Adherence Chart</a>
+	<a href="{{ url_for('main.weight_trend_chart', client_name=name) }}" class="button">Weight Trend</a>
+	<a href="{{ url_for('main.bmi_info', client_name=name) }}" class="button">BMI Info</a>
+	<a href="{{ url_for('main.workout_history', client_name=name) }}" class="button">Workout History</a>
+	</div>
 </div>
 {% endif %}
 {% extends "base.html" %}
@@ -25,6 +33,15 @@ Calories : {{ calories }} kcal/day
 {% block content %}
 
 <form method="POST" class="client-form">
+	<div class="form-row">
+		<label for="client_select">Select Client</label>
+		<select id="client_select" name="client_select" onchange="if(this.value) { document.getElementById('name').value = this.value; }">
+			<option value="">-- New Client --</option>
+			{% for c in clients %}
+			<option value="{{ c.name }}">{{ c.name }}</option>
+			{% endfor %}
+		</select>
+	</div>
 	<div class="form-row">
 		<label for="name">Name</label>
 		<input id="name" name="name" type="text" value="{{ name or '' }}" required>
@@ -34,6 +51,10 @@ Calories : {{ calories }} kcal/day
 		<input id="age" name="age" type="number" min="0" value="{{ age or '' }}" required>
 	</div>
 	<div class="form-row">
+		<label for="height">Height (cm)</label>
+		<input id="height" name="height" type="number" step="0.1" value="{{ height or '' }}">
+	</div>
+	<div class="form-row">
 		<label for="weight">Weight (kg)</label>
 		<input id="weight" name="weight" type="number" step="0.1" value="{{ weight or '' }}" required>
 	</div>
@@ -41,6 +62,14 @@ Calories : {{ calories }} kcal/day
 		<label for="adherence">Weekly Adherence (%)</label>
 		<input id="adherence" name="adherence" type="range" min="0" max="100" value="{{ adherence or 0 }}" oninput="this.nextElementSibling.value = this.value">
 		<output>{{ adherence or 0 }}</output>
+	</div>
+	<div class="form-row">
+		<label for="target_weight">Target Weight (kg)</label>
+		<input id="target_weight" name="target_weight" type="number" step="0.1" value="{{ target_weight or '' }}">
+	</div>
+	<div class="form-row">
+		<label for="target_adherence">Target Adherence (%)</label>
+		<input id="target_adherence" name="target_adherence" type="number" min="0" max="100" value="{{ target_adherence or '' }}">
 	</div>
 	<div class="form-row">
 		<label for="notes">Coach Notes</label>
@@ -106,11 +135,12 @@ Calories : {{ calories }} kcal/day
 			<tr>
 				<th>Name</th>
 				<th>Age</th>
+				<th>Height (cm)</th>
 				<th>Weight</th>
 				<th>Program</th>
 				<th>Calories</th>
-				<th>Adherence</th>
-				<th>Notes</th>
+				<th>Target Weight</th>
+				<th>Target Adherence</th>
 				<th>Progress</th>
 			</tr>
 		</thead>
@@ -119,11 +149,12 @@ Calories : {{ calories }} kcal/day
 						<tr>
 								<td>{{ c.name }}</td>
 								<td>{{ c.age or '' }}</td>
+								<td>{{ c.height or '' }}</td>
 								<td>{{ c.weight or '' }}</td>
 								<td>{{ c.program }}</td>
 								<td>{{ c.calories or '' }}</td>
-								<td>{{ c.adherence }}</td>
-								<td>{{ c.notes }}</td>
+								<td>{{ c.target_weight or '' }}</td>
+								<td>{{ c.target_adherence or '' }}</td>
 								<td>
 									<a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
 								</td>
@@ -160,3 +191,55 @@ Calories : {{ calories }} kcal/day
 {% endif %}
 
 {% endblock %}
+
+<hr>
+<h3>Log Workout</h3>
+<form method="POST" action="{{ url_for('main.log_workout') }}">
+	<div class="form-row">
+		<label for="workout_client_name">Client Name</label>
+		<input id="workout_client_name" name="workout_client_name" type="text" required>
+	</div>
+	<div class="form-row">
+		<label for="workout_date">Date (YYYY-MM-DD)</label>
+		<input id="workout_date" name="workout_date" type="date" required>
+	</div>
+	<div class="form-row">
+		<label for="workout_type">Workout Type</label>
+		<input id="workout_type" name="workout_type" type="text" required>
+	</div>
+	<div class="form-row">
+		<label for="workout_duration">Duration (min)</label>
+		<input id="workout_duration" name="workout_duration" type="number" min="0" value="60">
+	</div>
+	<div class="form-row">
+		<label for="workout_notes">Notes</label>
+		<input id="workout_notes" name="workout_notes" type="text">
+	</div>
+	<button type="submit">Log Workout</button>
+</form>
+
+<hr>
+<h3>Log Body Metrics</h3>
+<form method="POST" action="{{ url_for('main.log_metrics') }}">
+	<div class="form-row">
+		<label for="metrics_client_name">Client Name</label>
+		<input id="metrics_client_name" name="metrics_client_name" type="text" required>
+	</div>
+	<div class="form-row">
+		<label for="metrics_date">Date (YYYY-MM-DD)</label>
+		<input id="metrics_date" name="metrics_date" type="date" required>
+	</div>
+	<div class="form-row">
+		<label for="metrics_weight">Weight (kg)</label>
+		<input id="metrics_weight" name="metrics_weight" type="number" step="0.1">
+	</div>
+	<div class="form-row">
+		<label for="metrics_waist">Waist (cm)</label>
+		<input id="metrics_waist" name="metrics_waist" type="number" step="0.1">
+	</div>
+	<div class="form-row">
+		<label for="metrics_bodyfat">Bodyfat (%)</label>
+		<input id="metrics_bodyfat" name="metrics_bodyfat" type="number" step="0.1">
+	</div>
+	<button type="submit">Log Metrics</button>
+</form>
