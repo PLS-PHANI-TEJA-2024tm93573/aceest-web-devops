@@ -71,7 +71,6 @@ pipeline {
             when {
                 branch 'main'
            }
-        }
             steps {
                 sh '''
                 echo "Pushing Docker image as dev-latest..."
