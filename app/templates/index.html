@@ -8,16 +8,23 @@
 	{% endif %}
 {% endwith %}
 {% if name and program and calories %}
-<div style="background:#222; color:#d4af37; padding:1em; margin:1em 0; border-radius:8px; max-width:400px;">
+<div style="background:#222; color:#d4af37; padding:1em; margin:1em 0; border-radius:8px; max-width:500px;">
 	<h3>CLIENT PROFILE</h3>
 	<pre style="color:#fff; background:none; border:none; font-size:1em;">
-Name     : {{ name }}
-Age      : {{ age }}
-Weight   : {{ weight }} kg
-Program  : {{ program }}
-Calories : {{ calories }} kcal/day
+Name           : {{ name }}
+Age            : {{ age }}
+Height         : {{ height or '-' }} cm
+Weight         : {{ weight }} kg
+Program        : {{ program }}
+Calories       : {{ calories }} kcal/day
+Target Weight  : {{ target_weight or '-' }} kg
+Target Adher.  : {{ target_adherence or '-' }} %
 	</pre>
-	<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button" style="margin-top:10px;display:inline-block;">View Progress Chart</a>
+	<div style="margin-top:10px;">
+		<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button">Adherence Chart</a>
+		<a href="{{ url_for('main.weight_trend_chart', client_name=name) }}" class="button">Weight Trend</a>
+		<a href="{{ url_for('main.bmi_info', client_name=name) }}" class="button">BMI Info</a>
+	</div>
 </div>
 {% endif %}
 {% extends "base.html" %}

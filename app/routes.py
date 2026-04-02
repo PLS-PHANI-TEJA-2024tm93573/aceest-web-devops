@@ -1,3 +1,4 @@
+
 import base64
 import csv
 import io
@@ -212,3 +213,75 @@ def progress_chart(client_name):
     return render_template(
         "progress_chart.html", client_name=client_name, img_data=img_b64
     )
+
+
+@main.route("/weight_trend_chart/<client_name>")
+def weight_trend_chart(client_name):
+    # Dummy data for now; replace with real metrics if available
+    # Example: get weight metrics from a new get_weight_metrics(client_name) function
+    # For now, use progress as a placeholder
+    progress = get_progress(client_name)
+    if not progress:
+        flash("No progress data available for this client", "info")
+        return redirect(url_for("main.index"))
+
+    # In a real implementation, fetch weight by week/date from metrics table
+    # Here, just plot adherence as a placeholder
+    weeks = [p["week"] for p in reversed(progress)]
+    weights = [p["adherence"] for p in reversed(progress)]  # Replace with real weights
+
+    plt.figure(figsize=(8, 4))
+    plt.plot(weeks, weights, marker="o", linewidth=2, color="orange")
+    plt.title(f"Weight Trend – {client_name}")
+    plt.xlabel("Week")
+    plt.ylabel("Weight (kg)")
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    img = io.BytesIO()
+    plt.savefig(img, format="png")
+    plt.close()
+    img.seek(0)
+    img_b64 = base64.b64encode(img.getvalue()).decode()
+    return render_template(
+        "progress_chart.html", client_name=client_name, img_data=img_b64, chart_title="Weight Trend"
+    )
+
+
+@main.route("/bmi_info/<client_name>")
+def bmi_info(client_name):
+    # Find client by name
+    clients = get_clients()
+    client = next((c for c in clients if c.get("name") == client_name), None)
+    if not client:
+        flash("Client not found", "error")
+        return redirect(url_for("main.index"))
+    height = client.get("height")
+    weight = client.get("weight")
+    try:
+        h = float(height)
+        w = float(weight)
+    except (TypeError, ValueError):
+        h = 0
+        w = 0
+    if h <= 0 or w <= 0:
+        flash("Enter valid height and weight for BMI calculation", "warning")
+        return redirect(url_for("main.index"))
+    h_m = h / 100.0
+    bmi = w / (h_m * h_m)
+    bmi = round(bmi, 1)
+    if bmi < 18.5:
+        category = "Underweight"
+        risk = "Potential nutrient deficiency, low energy."
+    elif bmi < 25:
+        category = "Normal"
+        risk = "Low risk if active and strong."
+    elif bmi < 30:
+        category = "Overweight"
+        risk = "Moderate risk; focus on adherence and progressive activity."
+    else:
+        category = "Obese"
+        risk = "Higher risk; prioritize fat loss, consistency, and supervision."
+    flash(f"BMI for {client_name}: {bmi} ({category}) - {risk}", "info")
+    return redirect(url_for("main.index"))
