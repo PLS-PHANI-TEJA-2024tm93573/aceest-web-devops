@@ -21,9 +21,10 @@ Target Weight  : {{ target_weight or '-' }} kg
 Target Adher.  : {{ target_adherence or '-' }} %
 	</pre>
 	<div style="margin-top:10px;">
-		<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button">Adherence Chart</a>
-		<a href="{{ url_for('main.weight_trend_chart', client_name=name) }}" class="button">Weight Trend</a>
-		<a href="{{ url_for('main.bmi_info', client_name=name) }}" class="button">BMI Info</a>
+	<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button">Adherence Chart</a>
+	<a href="{{ url_for('main.weight_trend_chart', client_name=name) }}" class="button">Weight Trend</a>
+	<a href="{{ url_for('main.bmi_info', client_name=name) }}" class="button">BMI Info</a>
+	<a href="{{ url_for('main.workout_history', client_name=name) }}" class="button">Workout History</a>
 	</div>
 </div>
 {% endif %}
@@ -190,3 +191,55 @@ Target Adher.  : {{ target_adherence or '-' }} %
 {% endif %}
 
 {% endblock %}
+
+<hr>
+<h3>Log Workout</h3>
+<form method="POST" action="{{ url_for('main.log_workout') }}">
+	<div class="form-row">
+		<label for="workout_client_name">Client Name</label>
+		<input id="workout_client_name" name="workout_client_name" type="text" required>
+	</div>
+	<div class="form-row">
+		<label for="workout_date">Date (YYYY-MM-DD)</label>
+		<input id="workout_date" name="workout_date" type="date" required>
+	</div>
+	<div class="form-row">
+		<label for="workout_type">Workout Type</label>
+		<input id="workout_type" name="workout_type" type="text" required>
+	</div>
+	<div class="form-row">
+		<label for="workout_duration">Duration (min)</label>
+		<input id="workout_duration" name="workout_duration" type="number" min="0" value="60">
+	</div>
+	<div class="form-row">
+		<label for="workout_notes">Notes</label>
+		<input id="workout_notes" name="workout_notes" type="text">
+	</div>
+	<button type="submit">Log Workout</button>
+</form>
+
+<hr>
+<h3>Log Body Metrics</h3>
+<form method="POST" action="{{ url_for('main.log_metrics') }}">
+	<div class="form-row">
+		<label for="metrics_client_name">Client Name</label>
+		<input id="metrics_client_name" name="metrics_client_name" type="text" required>
+	</div>
+	<div class="form-row">
+		<label for="metrics_date">Date (YYYY-MM-DD)</label>
+		<input id="metrics_date" name="metrics_date" type="date" required>
+	</div>
+	<div class="form-row">
+		<label for="metrics_weight">Weight (kg)</label>
+		<input id="metrics_weight" name="metrics_weight" type="number" step="0.1">
+	</div>
+	<div class="form-row">
+		<label for="metrics_waist">Waist (cm)</label>
+		<input id="metrics_waist" name="metrics_waist" type="number" step="0.1">
+	</div>
+	<div class="form-row">
+		<label for="metrics_bodyfat">Bodyfat (%)</label>
+		<input id="metrics_bodyfat" name="metrics_bodyfat" type="number" step="0.1">
+	</div>
+	<button type="submit">Log Metrics</button>
+</form>

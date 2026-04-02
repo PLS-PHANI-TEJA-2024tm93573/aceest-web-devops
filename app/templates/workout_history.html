@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Workout History for {{ client_name }}</h2>
+{% if history and history|length > 0 %}
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Duration (min)</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for w in history %}
+        <tr>
+            <td>{{ w.date }}</td>
+            <td>{{ w.workout_type }}</td>
+            <td>{{ w.duration_min }}</td>
+            <td>{{ w.notes }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No workout history found for this client.</p>
+{% endif %}
+<a href="{{ url_for('main.index') }}">Back to Dashboard</a>
+{% endblock %}

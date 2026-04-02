@@ -20,7 +20,10 @@ from .models import (
     get_client_by_name,
     get_clients,
     get_progress,
+    get_workout_history,
+    save_metrics,
     save_progress,
+    save_workout,
 )
 from .programs import programs
 
@@ -313,4 +316,61 @@ def bmi_info(client_name):
         category = "Obese"
         risk = "Higher risk; prioritize fat loss, consistency, and supervision."
     flash(f"BMI for {client_name}: {bmi} ({category}) - {risk}", "info")
+    return redirect(url_for("main.index"))
+
+
+# Workout history route
+@main.route("/workout_history/<client_name>")
+def workout_history(client_name):
+    history = get_workout_history(client_name)
+    return render_template(
+        "workout_history.html", client_name=client_name, history=history
+    )
+
+
+# Log workout route
+@main.route("/log_workout", methods=["POST"])
+def log_workout():
+    client_name = request.form.get("workout_client_name")
+    date = request.form.get("workout_date")
+    workout_type = request.form.get("workout_type")
+    duration_min = request.form.get("workout_duration")
+    notes = request.form.get("workout_notes")
+    if not client_name or not date or not workout_type:
+        flash("Client name, date, and workout type are required.", "error")
+        return redirect(url_for("main.index"))
+    try:
+        duration = int(duration_min) if duration_min else 0
+    except ValueError:
+        duration = 0
+    save_workout(client_name, date, workout_type, duration, notes or "")
+    flash("Workout logged successfully.", "success")
+    return redirect(url_for("main.index"))
+
+
+# Log metrics route
+@main.route("/log_metrics", methods=["POST"])
+def log_metrics():
+    client_name = request.form.get("metrics_client_name")
+    date = request.form.get("metrics_date")
+    weight = request.form.get("metrics_weight")
+    waist = request.form.get("metrics_waist")
+    bodyfat = request.form.get("metrics_bodyfat")
+    if not client_name or not date:
+        flash("Client name and date are required.", "error")
+        return redirect(url_for("main.index"))
+    try:
+        weight_f = float(weight) if weight else 0.0
+    except ValueError:
+        weight_f = 0.0
+    try:
+        waist_f = float(waist) if waist else 0.0
+    except ValueError:
+        waist_f = 0.0
+    try:
+        bodyfat_f = float(bodyfat) if bodyfat else 0.0
+    except ValueError:
+        bodyfat_f = 0.0
+    save_metrics(client_name, date, weight_f, waist_f, bodyfat_f)
+    flash("Body metrics logged successfully.", "success")
     return redirect(url_for("main.index"))
