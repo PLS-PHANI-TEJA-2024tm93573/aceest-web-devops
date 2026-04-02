@@ -28,8 +28,11 @@ def index():
     diet = None
     name = None
     age = None
+    height = None
     weight = None
     adherence = None
+    target_weight = None
+    target_adherence = None
     calories = None
     color = None
     notes = None
@@ -38,8 +41,11 @@ def index():
         # Client fields
         name = request.form.get("name")
         age = request.form.get("age")
+        height = request.form.get("height")
         weight = request.form.get("weight")
         adherence = request.form.get("adherence")
+        target_weight = request.form.get("target_weight")
+        target_adherence = request.form.get("target_adherence")
         notes = request.form.get("notes")
         selected_program = request.form.get("program")
 
@@ -63,19 +69,30 @@ def index():
         except ValueError:
             age_i = None
         try:
+            height_f = float(height) if height not in (None, "") else None
+        except ValueError:
+            height_f = None
+        try:
             weight_f = float(weight) if weight not in (None, "") else None
         except ValueError:
             weight_f = None
+        # adherence_i is not used; adherence is passed as string or None and not needed here
         try:
-            adherence_i = int(adherence) if adherence not in (None, "") else 0
+            target_weight_f = float(target_weight) if target_weight not in (None, "") else None
         except ValueError:
-            adherence_i = 0
+            target_weight_f = None
+        try:
+            target_adherence_i = int(target_adherence) if target_adherence not in (None, "") else None
+        except ValueError:
+            target_adherence_i = None
         client = {
             "name": name or "",
             "age": age_i,
+            "height": height_f,
             "weight": weight_f,
             "program": selected_program or "",
-            "adherence": adherence_i,
+            "target_weight": target_weight_f,
+            "target_adherence": target_adherence_i,
             "notes": notes or "",
             "calories": calories,
         }
@@ -92,8 +109,11 @@ def index():
         diet=diet,
         name=name,
         age=age,
+        height=height,
         weight=weight,
         adherence=adherence,
+        target_weight=target_weight,
+        target_adherence=target_adherence,
         calories=calories,
         color=color,
         notes=notes,

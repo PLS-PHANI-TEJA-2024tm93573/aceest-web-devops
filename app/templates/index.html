@@ -26,12 +26,25 @@ Calories : {{ calories }} kcal/day
 
 <form method="POST" class="client-form">
 	<div class="form-row">
+		<label for="client_select">Select Client</label>
+		<select id="client_select" name="client_select" onchange="if(this.value) { document.getElementById('name').value = this.value; }">
+			<option value="">-- New Client --</option>
+			{% for c in clients %}
+			<option value="{{ c.name }}">{{ c.name }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="form-row">
 		<label for="name">Name</label>
 		<input id="name" name="name" type="text" value="{{ name or '' }}" required>
 	</div>
 	<div class="form-row">
 		<label for="age">Age</label>
 		<input id="age" name="age" type="number" min="0" value="{{ age or '' }}" required>
+	</div>
+	<div class="form-row">
+		<label for="height">Height (cm)</label>
+		<input id="height" name="height" type="number" step="0.1" value="{{ height or '' }}">
 	</div>
 	<div class="form-row">
 		<label for="weight">Weight (kg)</label>
@@ -41,6 +54,14 @@ Calories : {{ calories }} kcal/day
 		<label for="adherence">Weekly Adherence (%)</label>
 		<input id="adherence" name="adherence" type="range" min="0" max="100" value="{{ adherence or 0 }}" oninput="this.nextElementSibling.value = this.value">
 		<output>{{ adherence or 0 }}</output>
+	</div>
+	<div class="form-row">
+		<label for="target_weight">Target Weight (kg)</label>
+		<input id="target_weight" name="target_weight" type="number" step="0.1" value="{{ target_weight or '' }}">
+	</div>
+	<div class="form-row">
+		<label for="target_adherence">Target Adherence (%)</label>
+		<input id="target_adherence" name="target_adherence" type="number" min="0" max="100" value="{{ target_adherence or '' }}">
 	</div>
 	<div class="form-row">
 		<label for="notes">Coach Notes</label>
@@ -106,11 +127,12 @@ Calories : {{ calories }} kcal/day
 			<tr>
 				<th>Name</th>
 				<th>Age</th>
+				<th>Height (cm)</th>
 				<th>Weight</th>
 				<th>Program</th>
 				<th>Calories</th>
-				<th>Adherence</th>
-				<th>Notes</th>
+				<th>Target Weight</th>
+				<th>Target Adherence</th>
 				<th>Progress</th>
 			</tr>
 		</thead>
@@ -119,11 +141,12 @@ Calories : {{ calories }} kcal/day
 						<tr>
 								<td>{{ c.name }}</td>
 								<td>{{ c.age or '' }}</td>
+								<td>{{ c.height or '' }}</td>
 								<td>{{ c.weight or '' }}</td>
 								<td>{{ c.program }}</td>
 								<td>{{ c.calories or '' }}</td>
-								<td>{{ c.adherence }}</td>
-								<td>{{ c.notes }}</td>
+								<td>{{ c.target_weight or '' }}</td>
+								<td>{{ c.target_adherence or '' }}</td>
 								<td>
 									<a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
 								</td>

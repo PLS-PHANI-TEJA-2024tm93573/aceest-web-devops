@@ -33,31 +33,85 @@ def get_db_conn():
 def init_db():
     conn = get_db_conn()
     cur = conn.cursor()
-    # Add adherence column if missing (backward compatibility)
-    cur.execute("""
+    # Check if clients table exists and has all required columns
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='clients'")
+    exists = cur.fetchone() is not None
+
+    if exists:
+        cur.execute("PRAGMA table_info(clients)")
+        cols = [row[1] for row in cur.fetchall()]
+        required = {
+            "id", "name", "age", "height", "weight", "program", "calories", "target_weight", "target_adherence"
+        }
+        if not required.issubset(set(cols)):
+            cur.execute("DROP TABLE clients")
+
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE,
             age INTEGER,
+            height REAL,
             weight REAL,
             program TEXT,
             calories INTEGER,
-            adherence INTEGER DEFAULT 0
+            target_weight REAL,
+            target_adherence INTEGER
         )
-    """)
-    # Try to add adherence column if it doesn't exist (for old DBs)
-    try:
-        cur.execute("ALTER TABLE clients ADD COLUMN adherence INTEGER DEFAULT 0")
-    except sqlite3.OperationalError:
-        pass
-    cur.execute("""
+        """
+    )
+
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS progress (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_name TEXT,
             week TEXT,
             adherence INTEGER
         )
-    """)
+        """
+    )
+
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS workouts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_name TEXT,
+            date TEXT,
+            workout_type TEXT,
+            duration_min INTEGER,
+            notes TEXT
+        )
+        """
+    )
+
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS exercises (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workout_id INTEGER,
+            name TEXT,
+            sets INTEGER,
+            reps INTEGER,
+            weight REAL
+        )
+        """
+    )
+
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS metrics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            client_name TEXT,
+            date TEXT,
+            weight REAL,
+            waist REAL,
+            bodyfat REAL
+        )
+        """
+    )
+
     conn.commit()
     conn.close()
 
@@ -65,56 +119,40 @@ def init_db():
 def add_client(client: Dict[str, Any]) -> None:
     conn = get_db_conn()
     cur = conn.cursor()
-    # Only update adherence if present in the client form (not from progress logging)
     cur.execute("SELECT id FROM clients WHERE name=?", (client.get("name"),))
     row = cur.fetchone()
-    adherence = client.get("adherence")
-    if adherence is not None:
-        try:
-            adherence = int(adherence)
-        except (TypeError, ValueError):
-            adherence = 0
     if row:
-        if adherence is not None:
-            cur.execute(
-                """
-                UPDATE clients SET age=?, weight=?, program=?, calories=?, adherence=? WHERE name=?
-                """,
-                (
-                    client.get("age"),
-                    client.get("weight"),
-                    client.get("program"),
-                    client.get("calories"),
-                    adherence,
-                    client.get("name"),
-                ),
-            )
-        else:
-            cur.execute(
-                """
-                UPDATE clients SET age=?, weight=?, program=?, calories=? WHERE name=?
-                """,
-                (
-                    client.get("age"),
-                    client.get("weight"),
-                    client.get("program"),
-                    client.get("calories"),
-                    client.get("name"),
-                ),
-            )
+        cur.execute(
+            """
+            UPDATE clients SET age=?, height=?, weight=?, program=?, calories=?, target_weight=?,
+            target_adherence=? WHERE name=?
+            """,
+            (
+                client.get("age"),
+                client.get("height"),
+                client.get("weight"),
+                client.get("program"),
+                client.get("calories"),
+                client.get("target_weight"),
+                client.get("target_adherence"),
+                client.get("name"),
+            ),
+        )
     else:
         cur.execute(
             """
-            INSERT INTO clients (name, age, weight, program, calories, adherence)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO clients (name, age, height, weight, program, calories, target_weight, target_adherence)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 client.get("name"),
                 client.get("age"),
+                client.get("height"),
                 client.get("weight"),
                 client.get("program"),
                 client.get("calories"),
-                adherence if adherence is not None else 0,
+                client.get("target_weight"),
+                client.get("target_adherence"),
             ),
         )
     conn.commit()
@@ -128,17 +166,17 @@ def get_clients() -> List[Dict[str, Any]]:
     rows = cur.fetchall()
     clients = []
     for row in rows:
-        adherence = row["adherence"] if "adherence" in row.keys() else 0
         clients.append(
             {
                 "id": row["id"],
                 "name": row["name"],
                 "age": row["age"],
+                "height": row["height"],
                 "weight": row["weight"],
                 "program": row["program"],
                 "calories": row["calories"],
-                "adherence": adherence,
-                "notes": row["notes"] if "notes" in row.keys() else "",
+                "target_weight": row["target_weight"],
+                "target_adherence": row["target_adherence"],
             }
         )
     conn.close()
@@ -156,9 +194,12 @@ def get_client_by_name(name: str) -> Optional[Dict[str, Any]]:
             "id": row["id"],
             "name": row["name"],
             "age": row["age"],
+            "height": row["height"],
             "weight": row["weight"],
             "program": row["program"],
             "calories": row["calories"],
+            "target_weight": row["target_weight"],
+            "target_adherence": row["target_adherence"],
         }
     return None
 
