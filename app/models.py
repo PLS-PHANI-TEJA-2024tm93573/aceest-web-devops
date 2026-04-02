@@ -41,7 +41,8 @@ def init_db():
         cur.execute("PRAGMA table_info(clients)")
         cols = [row[1] for row in cur.fetchall()]
         required = {
-            "id", "name", "age", "height", "weight", "program", "calories", "target_weight", "target_adherence"
+            "id", "name", "age", "height", "weight", "program",
+            "calories", "target_weight", "target_adherence","adherence"
         }
         if not required.issubset(set(cols)):
             cur.execute("DROP TABLE clients")
@@ -57,7 +58,8 @@ def init_db():
             program TEXT,
             calories INTEGER,
             target_weight REAL,
-            target_adherence INTEGER
+            target_adherence INTEGER,
+            adherence INTEGER
         )
         """
     )
@@ -124,8 +126,10 @@ def add_client(client: Dict[str, Any]) -> None:
     if row:
         cur.execute(
             """
-            UPDATE clients SET age=?, height=?, weight=?, program=?, calories=?, target_weight=?,
-            target_adherence=? WHERE name=?
+            UPDATE clients SET
+                age=?, height=?, weight=?, program=?, calories=?,
+                target_weight=?, target_adherence=?, adherence=?
+            WHERE name=?
             """,
             (
                 client.get("age"),
@@ -135,14 +139,18 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("calories"),
                 client.get("target_weight"),
                 client.get("target_adherence"),
+                client.get("adherence"),
                 client.get("name"),
             ),
         )
     else:
         cur.execute(
             """
-            INSERT INTO clients (name, age, height, weight, program, calories, target_weight, target_adherence)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO clients (
+                name, age, height, weight, program,
+                calories, target_weight, target_adherence, adherence
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 client.get("name"),
@@ -153,8 +161,9 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("calories"),
                 client.get("target_weight"),
                 client.get("target_adherence"),
+                client.get("adherence"), 
             ),
-        )
+        )       
     conn.commit()
     conn.close()
 
@@ -177,6 +186,7 @@ def get_clients() -> List[Dict[str, Any]]:
                 "calories": row["calories"],
                 "target_weight": row["target_weight"],
                 "target_adherence": row["target_adherence"],
+                "adherence": row["adherence"],
             }
         )
     conn.close()

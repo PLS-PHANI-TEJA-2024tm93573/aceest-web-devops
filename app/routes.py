@@ -16,7 +16,7 @@ from flask import (
     url_for,
 )
 
-from .models import add_client, get_clients, get_progress, save_progress
+from .models import add_client, get_clients, get_progress, save_progress, get_client_by_name
 from .programs import programs
 
 main = Blueprint("main", __name__)
@@ -77,7 +77,10 @@ def index():
             weight_f = float(weight) if weight not in (None, "") else None
         except ValueError:
             weight_f = None
-        # adherence_i is not used; adherence is passed as string or None and not needed here
+        try:
+            adherence_i = int(adherence) if adherence not in (None, "") else None
+        except ValueError:
+            adherence_i = 0
         try:
             target_weight_f = float(target_weight) if target_weight not in (None, "") else None
         except ValueError:
@@ -94,6 +97,7 @@ def index():
             "program": selected_program or "",
             "target_weight": target_weight_f,
             "target_adherence": target_adherence_i,
+            "adherence": adherence_i,
             "notes": notes or "",
             "calories": calories,
         }
@@ -126,16 +130,29 @@ def index():
 def save_progress_route():
     name = request.form.get("progress_name")
     adherence = request.form.get("progress_adherence")
+
     if not name:
         flash("Client name required to save progress", "error")
         return redirect(url_for("main.index"))
+
     try:
         adherence_i = int(adherence) if adherence not in (None, "") else 0
     except ValueError:
         adherence_i = 0
+
     week = datetime.now().strftime("Week %U - %Y")
+
     print(f"Received progress for {name} - Week: {week}, Adherence: {adherence_i}")
+
+    # ✅ Save historical progress
     save_progress(name, week, adherence_i)
+
+    # ✅ ALSO update current client adherence (CRITICAL FIX)
+    client = get_client_by_name(name)
+    if client:
+        client["adherence"] = adherence_i
+        add_client(client)
+
     flash("Weekly progress logged", "success")
     return redirect(url_for("main.index"))
 
