@@ -17,6 +17,7 @@ Weight   : {{ weight }} kg
 Program  : {{ program }}
 Calories : {{ calories }} kcal/day
 	</pre>
+	<a href="{{ url_for('main.progress_chart', client_name=name) }}" class="button" style="margin-top:10px;display:inline-block;">View Progress Chart</a>
 </div>
 {% endif %}
 {% extends "base.html" %}
@@ -110,19 +111,23 @@ Calories : {{ calories }} kcal/day
 				<th>Calories</th>
 				<th>Adherence</th>
 				<th>Notes</th>
+				<th>Progress</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for c in clients %}
-			<tr>
-				<td>{{ c.name }}</td>
-				<td>{{ c.age or '' }}</td>
-				<td>{{ c.weight or '' }}</td>
-				<td>{{ c.program }}</td>
-				<td>{{ c.calories or '' }}</td>
-				<td>{{ c.adherence }}</td>
-				<td>{{ c.notes }}</td>
-			</tr>
+						<tr>
+								<td>{{ c.name }}</td>
+								<td>{{ c.age or '' }}</td>
+								<td>{{ c.weight or '' }}</td>
+								<td>{{ c.program }}</td>
+								<td>{{ c.calories or '' }}</td>
+								<td>{{ c.adherence }}</td>
+								<td>{{ c.notes }}</td>
+								<td>
+									<a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
+								</td>
+						</tr>
 			{% endfor %}
 		</tbody>
 	</table>
