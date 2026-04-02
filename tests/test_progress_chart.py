@@ -1,5 +1,7 @@
 import pytest
+
 from app.models import save_progress
+
 
 def test_progress_chart_route(client):
     # Add a client and some progress data
@@ -13,6 +15,7 @@ def test_progress_chart_route(client):
     assert resp.status_code == 200
     assert b"Progress Chart for TestUser" in resp.data
     assert b"data:image/png;base64" in resp.data
+
 
 def test_progress_chart_route_no_data(client):
     # Should redirect to index if no progress data

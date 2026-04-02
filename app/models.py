@@ -41,14 +41,21 @@ def init_db():
         cur.execute("PRAGMA table_info(clients)")
         cols = [row[1] for row in cur.fetchall()]
         required = {
-            "id", "name", "age", "height", "weight", "program",
-            "calories", "target_weight", "target_adherence","adherence"
+            "id",
+            "name",
+            "age",
+            "height",
+            "weight",
+            "program",
+            "calories",
+            "target_weight",
+            "target_adherence",
+            "adherence",
         }
         if not required.issubset(set(cols)):
             cur.execute("DROP TABLE clients")
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT UNIQUE,
@@ -61,22 +68,18 @@ def init_db():
             target_adherence INTEGER,
             adherence INTEGER
         )
-        """
-    )
+        """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS progress (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_name TEXT,
             week TEXT,
             adherence INTEGER
         )
-        """
-    )
+        """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS workouts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_name TEXT,
@@ -85,11 +88,9 @@ def init_db():
             duration_min INTEGER,
             notes TEXT
         )
-        """
-    )
+        """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS exercises (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             workout_id INTEGER,
@@ -98,11 +99,9 @@ def init_db():
             reps INTEGER,
             weight REAL
         )
-        """
-    )
+        """)
 
-    cur.execute(
-        """
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS metrics (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_name TEXT,
@@ -111,8 +110,7 @@ def init_db():
             waist REAL,
             bodyfat REAL
         )
-        """
-    )
+        """)
 
     conn.commit()
     conn.close()
@@ -161,9 +159,9 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("calories"),
                 client.get("target_weight"),
                 client.get("target_adherence"),
-                client.get("adherence"), 
+                client.get("adherence"),
             ),
-        )       
+        )
     conn.commit()
     conn.close()
 

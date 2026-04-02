@@ -1,4 +1,3 @@
-
 import base64
 import csv
 import io
@@ -16,7 +15,13 @@ from flask import (
     url_for,
 )
 
-from .models import add_client, get_clients, get_progress, save_progress, get_client_by_name
+from .models import (
+    add_client,
+    get_client_by_name,
+    get_clients,
+    get_progress,
+    save_progress,
+)
 from .programs import programs
 
 main = Blueprint("main", __name__)
@@ -82,11 +87,15 @@ def index():
         except ValueError:
             adherence_i = 0
         try:
-            target_weight_f = float(target_weight) if target_weight not in (None, "") else None
+            target_weight_f = (
+                float(target_weight) if target_weight not in (None, "") else None
+            )
         except ValueError:
             target_weight_f = None
         try:
-            target_adherence_i = int(target_adherence) if target_adherence not in (None, "") else None
+            target_adherence_i = (
+                int(target_adherence) if target_adherence not in (None, "") else None
+            )
         except ValueError:
             target_adherence_i = None
         client = {
@@ -262,7 +271,10 @@ def weight_trend_chart(client_name):
     img.seek(0)
     img_b64 = base64.b64encode(img.getvalue()).decode()
     return render_template(
-        "progress_chart.html", client_name=client_name, img_data=img_b64, chart_title="Weight Trend"
+        "progress_chart.html",
+        client_name=client_name,
+        img_data=img_b64,
+        chart_title="Weight Trend",
     )
 
 
