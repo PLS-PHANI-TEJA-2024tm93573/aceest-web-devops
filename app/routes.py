@@ -1,8 +1,7 @@
-from flask import send_file
-import tempfile
 import base64
 import csv
 import io
+import tempfile
 from datetime import datetime
 from functools import wraps
 
@@ -15,6 +14,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
 )
@@ -427,6 +427,7 @@ def log_metrics():
     flash("Body metrics logged successfully.", "success")
     return redirect(url_for("main.index"))
 
+
 @main.route("/export_pdf/<client_name>")
 @login_required
 def export_pdf(client_name):
@@ -462,4 +463,6 @@ def export_pdf(client_name):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         pdf.output(tmp.name)
         tmp.flush()
-        return send_file(tmp.name, as_attachment=True, download_name=f"{client['name']}_report.pdf")
+        return send_file(
+            tmp.name, as_attachment=True, download_name=f"{client['name']}_report.pdf"
+        )

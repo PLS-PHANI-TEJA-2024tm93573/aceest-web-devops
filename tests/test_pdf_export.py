@@ -1,6 +1,8 @@
 import pytest
+
 from app import create_app
 from app.models import add_client, get_client_by_name
+
 
 def test_export_pdf_route(client):
     # Add a test client to the DB
