@@ -1,3 +1,5 @@
+# --- User Authentication Functions ---
+import hashlib
 import os
 import sqlite3
 from typing import Any, Dict, List, Optional
@@ -18,21 +20,38 @@ print("ENV DB:", os.environ.get("ACEEST_DB_PATH"))
 
 def get_db_conn():
     db_path = get_db_path()
-
     # 🔥 critical fix for Docker/CI
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
-
     print(os.path.dirname(__file__))
     print(f"Connecting to DB at: {db_path}")
-
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
 
 def init_db():
-    conn = get_db_conn()
-    cur = conn.cursor()
+    print("Initializing database...")
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+    # Users table for authentication
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password_hash TEXT,
+            role TEXT
+        )
+    """)
+    # Create default admin user if not exists
+    cur.execute("SELECT id FROM users WHERE username=?", ("admin",))
+    if not cur.fetchone():
+        import hashlib
+
+        admin_pw = hashlib.sha256("admin".encode()).hexdigest()
+        cur.execute(
+            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+            ("admin", admin_pw, "Admin"),
+        )
     # Check if clients table exists and has all required columns
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='clients'")
     exists = cur.fetchone() is not None
@@ -117,8 +136,8 @@ def init_db():
 
 
 def add_client(client: Dict[str, Any]) -> None:
-    conn = get_db_conn()
-    cur = conn.cursor()
+    with get_db_conn() as conn:
+        cur = conn.cursor()
     cur.execute("SELECT id FROM clients WHERE name=?", (client.get("name"),))
     row = cur.fetchone()
     if row:
@@ -213,25 +232,24 @@ def get_client_by_name(name: str) -> Optional[Dict[str, Any]]:
 
 
 def clear_clients() -> None:
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM clients")
-    conn.commit()
-    conn.close()
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM clients")
+        conn.commit()
 
 
 def save_progress(client_name: str, week: str, adherence: int) -> None:
     print(f"Saving progress for {client_name} - Week: {week}, Adherence: {adherence}")
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT INTO progress (client_name, week, adherence)
-        VALUES (?, ?, ?)
-    """,
-        (client_name, week, adherence),
-    )
-    conn.commit()
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO progress (client_name, week, adherence)
+            VALUES (?, ?, ?)
+            """,
+            (client_name, week, adherence),
+        )
+        conn.commit()
     conn.close()
 
 
@@ -276,30 +294,59 @@ def get_workout_history(client_name: str) -> list:
 def save_workout(
     client_name: str, date: str, workout_type: str, duration_min: int, notes: str
 ) -> None:
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT INTO workouts (client_name, date, workout_type, duration_min, notes)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (client_name, date, workout_type, duration_min, notes),
-    )
-    conn.commit()
-    conn.close()
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+                INSERT INTO workouts (client_name, date, workout_type, duration_min, notes)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+            (client_name, date, workout_type, duration_min, notes),
+        )
+        conn.commit()
 
 
 def save_metrics(
     client_name: str, date: str, weight: float, waist: float, bodyfat: float
 ) -> None:
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
+                INSERT INTO metrics (client_name, date, weight, waist, bodyfat)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+            (client_name, date, weight, waist, bodyfat),
+        )
+        conn.commit()
+
+
+def create_user(username: str, password: str, role: str = "User") -> None:
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        # Avoid duplicate users
+        cur.execute("SELECT id FROM users WHERE username=?", (username,))
+        if not cur.fetchone():
+            cur.execute(
+                "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+                (username, pw_hash, role),
+            )
+            conn.commit()
+
+
+def get_user_by_username(username: str):
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute(
-        """
-        INSERT INTO metrics (client_name, date, weight, waist, bodyfat)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (client_name, date, weight, waist, bodyfat),
-    )
-    conn.commit()
+    cur.execute("SELECT * FROM users WHERE username=?", (username,))
+    row = cur.fetchone()
     conn.close()
+    return dict(row) if row else None
+
+
+def check_password(username: str, password: str) -> bool:
+    user = get_user_by_username(username)
+    if not user:
+        return False
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    return user["password_hash"] == pw_hash
