@@ -1,3 +1,4 @@
+# Dockerfile for running tests with pytest and generating coverage reports
 # Use official Python image
 FROM python:3.11-slim
 
