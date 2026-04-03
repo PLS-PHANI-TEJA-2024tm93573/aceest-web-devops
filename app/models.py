@@ -85,7 +85,8 @@ def init_db():
             calories INTEGER,
             target_weight REAL,
             target_adherence INTEGER,
-            adherence INTEGER
+            adherence INTEGER,
+            membership_expiry TEXT
         )
         """)
 
@@ -145,7 +146,7 @@ def add_client(client: Dict[str, Any]) -> None:
             """
             UPDATE clients SET
                 age=?, height=?, weight=?, program=?, calories=?,
-                target_weight=?, target_adherence=?, adherence=?
+                target_weight=?, target_adherence=?, adherence=?, membership_expiry=?
             WHERE name=?
             """,
             (
@@ -157,6 +158,7 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("target_weight"),
                 client.get("target_adherence"),
                 client.get("adherence"),
+                client.get("membership_expiry"),
                 client.get("name"),
             ),
         )
@@ -165,9 +167,9 @@ def add_client(client: Dict[str, Any]) -> None:
             """
             INSERT INTO clients (
                 name, age, height, weight, program,
-                calories, target_weight, target_adherence, adherence
+                calories, target_weight, target_adherence, adherence, membership_expiry
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 client.get("name"),
@@ -179,6 +181,7 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("target_weight"),
                 client.get("target_adherence"),
                 client.get("adherence"),
+                client.get("membership_expiry"),
             ),
         )
     conn.commit()
@@ -204,6 +207,7 @@ def get_clients() -> List[Dict[str, Any]]:
                 "target_weight": row["target_weight"],
                 "target_adherence": row["target_adherence"],
                 "adherence": row["adherence"],
+                "membership_expiry": row["membership_expiry"],
             }
         )
     conn.close()
@@ -227,6 +231,7 @@ def get_client_by_name(name: str) -> Optional[Dict[str, Any]]:
             "calories": row["calories"],
             "target_weight": row["target_weight"],
             "target_adherence": row["target_adherence"],
+            "membership_expiry": row["membership_expiry"],
         }
     return None
 

@@ -76,6 +76,10 @@ Target Adher.  : {{ target_adherence or '-' }} %
 		<input id="notes" name="notes" type="text" value="{{ notes or '' }}">
 	</div>
 	<div class="form-row">
+		<label for="membership_expiry">Membership Expiry (YYYY-MM-DD)</label>
+		<input id="membership_expiry" name="membership_expiry" type="date" value="{{ membership_expiry or '' }}">
+	</div>
+	<div class="form-row">
 		<label for="program">Select Program</label>
 		<select id="program" name="program" required>
 			<option value="">-- choose --</option>
@@ -139,9 +143,10 @@ Target Adher.  : {{ target_adherence or '-' }} %
 				<th>Weight</th>
 				<th>Program</th>
 				<th>Calories</th>
-				<th>Target Weight</th>
-				<th>Target Adherence</th>
-				<th>Progress</th>
+				   <th>Target Weight</th>
+				   <th>Target Adherence</th>
+				   <th>Membership Expiry</th>
+				   <th>Progress</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -153,11 +158,12 @@ Target Adher.  : {{ target_adherence or '-' }} %
 								<td>{{ c.weight or '' }}</td>
 								<td>{{ c.program }}</td>
 								<td>{{ c.calories or '' }}</td>
-								<td>{{ c.target_weight or '' }}</td>
-								<td>{{ c.target_adherence or '' }}</td>
-								<td>
-									<a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
-								</td>
+								   <td>{{ c.target_weight or '' }}</td>
+								   <td>{{ c.target_adherence or '' }}</td>
+								   <td>{{ c.membership_expiry or '' }}</td>
+								   <td>
+									   <a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
+								   </td>
 						</tr>
 			{% endfor %}
 		</tbody>
