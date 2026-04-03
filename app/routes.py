@@ -1,3 +1,5 @@
+from flask import send_file
+import tempfile
 import base64
 import csv
 import io
@@ -424,3 +426,40 @@ def log_metrics():
     save_metrics(client_name, date, weight_f, waist_f, bodyfat_f)
     flash("Body metrics logged successfully.", "success")
     return redirect(url_for("main.index"))
+
+@main.route("/export_pdf/<client_name>")
+@login_required
+def export_pdf(client_name):
+    try:
+        from fpdf import FPDF
+    except ImportError:
+        flash("FPDF not installed. Please install with 'pip install fpdf'", "danger")
+        return redirect(url_for("main.index"))
+    client = get_client_by_name(client_name)
+    if not client:
+        flash("Client not found", "danger")
+        return redirect(url_for("main.index"))
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, f"Client Report - {client['name']}", ln=True, align="C")
+    pdf.set_font("Arial", "", 12)
+    pdf.ln(10)
+    for key, label in [
+        ("name", "Name"),
+        ("age", "Age"),
+        ("height", "Height (cm)"),
+        ("weight", "Weight (kg)"),
+        ("program", "Program"),
+        ("calories", "Calories"),
+        ("target_weight", "Target Weight"),
+        ("target_adherence", "Target Adherence"),
+        ("adherence", "Adherence"),
+        ("membership_expiry", "Membership Expiry"),
+    ]:
+        pdf.cell(0, 10, f"{label}: {client.get(key, '')}", ln=True)
+    # Save to temp file and send
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        pdf.output(tmp.name)
+        tmp.flush()
+        return send_file(tmp.name, as_attachment=True, download_name=f"{client['name']}_report.pdf")
