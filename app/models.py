@@ -1,6 +1,7 @@
 # --- User Authentication Functions ---
 import hashlib
 import os
+# os.remove("app/data/aceest_fitness.db")
 import sqlite3
 from typing import Any, Dict, List, Optional
 
@@ -70,6 +71,7 @@ def init_db():
             "target_weight",
             "target_adherence",
             "adherence",
+            "notes"
         }
         if not required.issubset(set(cols)):
             cur.execute("DROP TABLE clients")
@@ -86,7 +88,8 @@ def init_db():
             target_weight REAL,
             target_adherence INTEGER,
             adherence INTEGER,
-            membership_expiry TEXT
+            membership_expiry TEXT,
+            notes TEXT
         )
         """)
 
@@ -146,7 +149,7 @@ def add_client(client: Dict[str, Any]) -> None:
             """
             UPDATE clients SET
                 age=?, height=?, weight=?, program=?, calories=?,
-                target_weight=?, target_adherence=?, adherence=?, membership_expiry=?
+                target_weight=?, target_adherence=?, adherence=?, notes=?, membership_expiry=?
             WHERE name=?
             """,
             (
@@ -158,6 +161,7 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("target_weight"),
                 client.get("target_adherence"),
                 client.get("adherence"),
+                client.get("notes"),
                 client.get("membership_expiry"),
                 client.get("name"),
             ),
@@ -167,9 +171,9 @@ def add_client(client: Dict[str, Any]) -> None:
             """
             INSERT INTO clients (
                 name, age, height, weight, program,
-                calories, target_weight, target_adherence, adherence, membership_expiry
+                calories, target_weight, target_adherence, adherence, notes, membership_expiry
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 client.get("name"),
@@ -181,6 +185,7 @@ def add_client(client: Dict[str, Any]) -> None:
                 client.get("target_weight"),
                 client.get("target_adherence"),
                 client.get("adherence"),
+                client.get("notes"),
                 client.get("membership_expiry"),
             ),
         )
@@ -230,6 +235,8 @@ def get_client_by_name(name: str) -> Optional[Dict[str, Any]]:
             "program": row["program"],
             "calories": row["calories"],
             "target_weight": row["target_weight"],
+            "adherence": row["adherence"],
+            "notes": row["notes"],
             "target_adherence": row["target_adherence"],
             "membership_expiry": row["membership_expiry"],
         }

@@ -466,3 +466,56 @@ def export_pdf(client_name):
         return send_file(
             tmp.name, as_attachment=True, download_name=f"{client['name']}_report.pdf"
         )
+
+
+@main.route("/delete_client/<client_name>", methods=["POST"])
+@login_required
+def delete_client(client_name):
+    from app.models import get_client_by_name
+
+    client = get_client_by_name(client_name)
+    if not client:
+        flash("Client not found", "danger")
+        return redirect(url_for("main.index"))
+
+    from app.models import get_db_conn
+
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM clients WHERE name=?", (client_name,))
+    conn.commit()
+    conn.close()
+    flash(f"Client '{client_name}' deleted.", "success")
+    return redirect(url_for("main.index"))
+
+
+@main.route("/edit_client/<client_name>", methods=["GET", "POST"])
+@login_required
+def edit_client(client_name):
+    from app.models import add_client, get_client_by_name
+
+    client = get_client_by_name(client_name)
+    if not client:
+        flash("Client not found", "danger")
+        return redirect(url_for("main.index"))
+    if request.method == "POST":
+        # Update client with form data
+        updated = dict(client)
+        for field in [
+            "age",
+            "height",
+            "weight",
+            "program",
+            "target_weight",
+            "target_adherence",
+            "adherence",
+            "notes",
+            "calories",
+            "membership_expiry",
+        ]:
+            val = request.form.get(field)
+            updated[field] = val
+        add_client(updated)
+        flash(f"Client '{client_name}' updated.", "success")
+        return redirect(url_for("main.index"))
+    return render_template("edit_client.html", client=client)
