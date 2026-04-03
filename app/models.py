@@ -1,8 +1,8 @@
+# --- User Authentication Functions ---
+import hashlib
 import os
 import sqlite3
 from typing import Any, Dict, List, Optional
-# --- User Authentication Functions ---
-import hashlib
 
 
 # DB_NAME can be overridden by the ACEEST_DB_PATH environment variable (set in test mode)
@@ -294,31 +294,31 @@ def get_workout_history(client_name: str) -> list:
 def save_workout(
     client_name: str, date: str, workout_type: str, duration_min: int, notes: str
 ) -> None:
-        with get_db_conn() as conn:
-            cur = conn.cursor()
-            cur.execute(
-                """
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
                 INSERT INTO workouts (client_name, date, workout_type, duration_min, notes)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (client_name, date, workout_type, duration_min, notes),
-            )
-            conn.commit()
+            (client_name, date, workout_type, duration_min, notes),
+        )
+        conn.commit()
 
 
 def save_metrics(
     client_name: str, date: str, weight: float, waist: float, bodyfat: float
 ) -> None:
-        with get_db_conn() as conn:
-            cur = conn.cursor()
-            cur.execute(
-                """
+    with get_db_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            """
                 INSERT INTO metrics (client_name, date, weight, waist, bodyfat)
                 VALUES (?, ?, ?, ?, ?)
                 """,
-                (client_name, date, weight, waist, bodyfat),
-            )
-            conn.commit()
+            (client_name, date, weight, waist, bodyfat),
+        )
+        conn.commit()
 
 
 def create_user(username: str, password: str, role: str = "User") -> None:

@@ -1,5 +1,13 @@
 import pytest
-from app.models import create_user, get_user_by_username, check_password, clear_clients, init_db
+
+from app.models import (
+    check_password,
+    clear_clients,
+    create_user,
+    get_user_by_username,
+    init_db,
+)
+
 
 @pytest.fixture(autouse=True)
 def setup_db():

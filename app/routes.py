@@ -5,7 +5,6 @@ from datetime import datetime
 from functools import wraps
 
 import matplotlib.pyplot as plt
-from .programs import programs
 from flask import (
     Blueprint,
     Response,
@@ -30,6 +29,7 @@ from .models import (
     save_progress,
     save_workout,
 )
+from .programs import programs
 
 
 def login_required(f):
