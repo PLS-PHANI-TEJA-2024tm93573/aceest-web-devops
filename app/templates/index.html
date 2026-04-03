@@ -148,6 +148,8 @@ Target Adher.  : {{ target_adherence or '-' }} %
 				<th>Membership Expiry</th>
 				<th>Progress</th>
 				<th>Export PDF</th>
+				<th>Edit</th>
+				<th>Delete</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -162,12 +164,20 @@ Target Adher.  : {{ target_adherence or '-' }} %
 								<td>{{ c.target_weight or '' }}</td>
 								<td>{{ c.target_adherence or '' }}</td>
 								<td>{{ c.membership_expiry or '' }}</td>
-								<td>
-								   <a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
-								</td>
-								<td>
-								   <a href="{{ url_for('main.export_pdf', client_name=c.name) }}" class="button">Export PDF</a>
-								</td>
+										  <td>
+											  <a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
+										  </td>
+										  <td>
+											  <a href="{{ url_for('main.export_pdf', client_name=c.name) }}" class="button">Export PDF</a>
+										  </td>
+												  <td>
+													  <a href="{{ url_for('main.edit_client', client_name=c.name) }}" class="button">Edit</a>
+												  </td>
+												  <td>
+													  <form method="post" action="{{ url_for('main.delete_client', client_name=c.name) }}" style="display:inline;">
+															<button type="submit" class="button" onclick="return confirm('Delete client {{c.name}}?');">Delete</button>
+													  </form>
+												  </td>
 						</tr>
 			{% endfor %}
 		</tbody>
