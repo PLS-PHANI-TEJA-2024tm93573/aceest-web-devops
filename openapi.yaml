@@ -1,0 +1,320 @@
+openapi: 3.0.3
+info:
+  title: ACEest Web API
+  version: 1.0.0
+  description: |
+    API documentation for ACEest web application. This specification covers all main routes, request/response types, and authentication requirements.
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  /login:
+    get:
+      summary: Login page
+      tags: [Auth]
+      responses:
+        '200':
+          description: Login HTML page
+          content:
+            text/html: {}
+    post:
+      summary: Login user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '302':
+          description: Redirect to index on success or login on failure
+
+  /logout:
+    get:
+      summary: Logout user
+      tags: [Auth]
+      responses:
+        '302':
+          description: Redirect to login
+
+  /:
+    get:
+      summary: Main dashboard
+      tags: [Client]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Dashboard HTML
+          content:
+            text/html: {}
+    post:
+      summary: Add new client
+      tags: [Client]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                age: { type: integer }
+                height: { type: number }
+                weight: { type: number }
+                program: { type: string }
+                target_weight: { type: number }
+                target_adherence: { type: integer }
+                adherence: { type: integer }
+                notes: { type: string }
+                membership_expiry: { type: string, format: date }
+      responses:
+        '200':
+          description: Dashboard HTML
+          content:
+            text/html: {}
+
+  /save_progress:
+    post:
+      summary: Save weekly progress for a client
+      tags: [Progress]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                progress_name: { type: string }
+                progress_adherence: { type: integer }
+      responses:
+        '302':
+          description: Redirect to dashboard
+
+  /export_csv:
+    get:
+      summary: Export all clients as CSV
+      tags: [Client]
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  /clients/data:
+    get:
+      summary: Get client names and adherence for charting
+      tags: [Client]
+      responses:
+        '200':
+          description: JSON with names and adherence
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  names:
+                    type: array
+                    items: { type: string }
+                  adherence:
+                    type: array
+                    items: { type: integer }
+
+  /progress_chart/{client_name}:
+    get:
+      summary: Get adherence progress chart for a client
+      tags: [Progress]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML page with embedded chart image
+          content:
+            text/html: {}
+
+  /weight_trend_chart/{client_name}:
+    get:
+      summary: Get weight trend chart for a client
+      tags: [Progress]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML page with embedded chart image
+          content:
+            text/html: {}
+
+  /bmi_info/{client_name}:
+    get:
+      summary: Calculate and show BMI info for a client
+      tags: [Client]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to dashboard with BMI info as flash message
+
+  /workout_history/{client_name}:
+    get:
+      summary: Get workout history for a client
+      tags: [Workout]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML page with workout history
+          content:
+            text/html: {}
+
+  /log_workout:
+    post:
+      summary: Log a workout for a client
+      tags: [Workout]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                workout_client_name: { type: string }
+                workout_date: { type: string, format: date }
+                workout_type: { type: string }
+                workout_duration: { type: integer }
+                workout_notes: { type: string }
+      responses:
+        '302':
+          description: Redirect to dashboard
+
+  /log_metrics:
+    post:
+      summary: Log body metrics for a client
+      tags: [Metrics]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                metrics_client_name: { type: string }
+                metrics_date: { type: string, format: date }
+                metrics_weight: { type: number }
+                metrics_waist: { type: number }
+                metrics_bodyfat: { type: number }
+      responses:
+        '302':
+          description: Redirect to dashboard
+
+  /export_pdf/{client_name}:
+    get:
+      summary: Export client report as PDF
+      tags: [Client]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PDF file download
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /delete_client/{client_name}:
+    post:
+      summary: Delete a client
+      tags: [Client]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to dashboard
+
+  /edit_client/{client_name}:
+    get:
+      summary: Get client edit form
+      tags: [Client]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML form for editing client
+          content:
+            text/html: {}
+    post:
+      summary: Update client details
+      tags: [Client]
+      parameters:
+        - in: path
+          name: client_name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                age: { type: integer }
+                height: { type: number }
+                weight: { type: number }
+                program: { type: string }
+                target_weight: { type: number }
+                target_adherence: { type: integer }
+                adherence: { type: integer }
+                notes: { type: string }
+                calories: { type: integer }
+                membership_expiry: { type: string, format: date }
+      responses:
+        '302':
+          description: Redirect to dashboard
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
