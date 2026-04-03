@@ -91,6 +91,7 @@ def index():
     calories = None
     color = None
     notes = None
+    membership_expiry = None
 
     if request.method == "POST":
         # Client fields
@@ -103,6 +104,7 @@ def index():
         target_adherence = request.form.get("target_adherence")
         notes = request.form.get("notes")
         selected_program = request.form.get("program")
+        membership_expiry = request.form.get("membership_expiry")
 
         if selected_program in programs:
             program = programs[selected_program]
@@ -158,6 +160,7 @@ def index():
             "adherence": adherence_i,
             "notes": notes or "",
             "calories": calories,
+            "membership_expiry": membership_expiry,
         }
         add_client(client)
 
@@ -180,6 +183,7 @@ def index():
         calories=calories,
         color=color,
         notes=notes,
+        membership_expiry=membership_expiry,
         clients=clients,
     )
 
