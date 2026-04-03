@@ -143,10 +143,11 @@ Target Adher.  : {{ target_adherence or '-' }} %
 				<th>Weight</th>
 				<th>Program</th>
 				<th>Calories</th>
-				   <th>Target Weight</th>
-				   <th>Target Adherence</th>
-				   <th>Membership Expiry</th>
-				   <th>Progress</th>
+				<th>Target Weight</th>
+				<th>Target Adherence</th>
+				<th>Membership Expiry</th>
+				<th>Progress</th>
+				<th>Export PDF</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -158,12 +159,15 @@ Target Adher.  : {{ target_adherence or '-' }} %
 								<td>{{ c.weight or '' }}</td>
 								<td>{{ c.program }}</td>
 								<td>{{ c.calories or '' }}</td>
-								   <td>{{ c.target_weight or '' }}</td>
-								   <td>{{ c.target_adherence or '' }}</td>
-								   <td>{{ c.membership_expiry or '' }}</td>
-								   <td>
-									   <a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
-								   </td>
+								<td>{{ c.target_weight or '' }}</td>
+								<td>{{ c.target_adherence or '' }}</td>
+								<td>{{ c.membership_expiry or '' }}</td>
+								<td>
+								   <a href="{{ url_for('main.progress_chart', client_name=c.name) }}" class="button">View Progress Chart</a>
+								</td>
+								<td>
+								   <a href="{{ url_for('main.export_pdf', client_name=c.name) }}" class="button">Export PDF</a>
+								</td>
 						</tr>
 			{% endfor %}
 		</tbody>
