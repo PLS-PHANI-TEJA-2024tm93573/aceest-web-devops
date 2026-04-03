@@ -1,6 +1,8 @@
 import os
 import sqlite3
 from typing import Any, Dict, List, Optional
+# --- User Authentication Functions ---
+import hashlib
 
 
 # DB_NAME can be overridden by the ACEEST_DB_PATH environment variable (set in test mode)
@@ -31,8 +33,28 @@ def get_db_conn():
 
 
 def init_db():
+    print("Initializing database...")
     conn = get_db_conn()
     cur = conn.cursor()
+    # Users table for authentication
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password_hash TEXT,
+            role TEXT
+        )
+    """)
+    # Create default admin user if not exists
+    cur.execute("SELECT id FROM users WHERE username=?", ("admin",))
+    if not cur.fetchone():
+        import hashlib
+
+        admin_pw = hashlib.sha256("admin".encode()).hexdigest()
+        cur.execute(
+            "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+            ("admin", admin_pw, "Admin"),
+        )
     # Check if clients table exists and has all required columns
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='clients'")
     exists = cur.fetchone() is not None
@@ -303,3 +325,32 @@ def save_metrics(
     )
     conn.commit()
     conn.close()
+
+
+def create_user(username: str, password: str, role: str = "User") -> None:
+    conn = get_db_conn()
+    cur = conn.cursor()
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    cur.execute(
+        "INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)",
+        (username, pw_hash, role),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_user_by_username(username: str):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username=?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def check_password(username: str, password: str) -> bool:
+    user = get_user_by_username(username)
+    if not user:
+        return False
+    pw_hash = hashlib.sha256(password.encode()).hexdigest()
+    return user["password_hash"] == pw_hash

@@ -2,8 +2,10 @@ import base64
 import csv
 import io
 from datetime import datetime
+from functools import wraps
 
 import matplotlib.pyplot as plt
+from .programs import programs
 from flask import (
     Blueprint,
     Response,
@@ -12,25 +14,63 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 
 from .models import (
     add_client,
+    check_password,
     get_client_by_name,
     get_clients,
     get_progress,
+    get_user_by_username,
     get_workout_history,
     save_metrics,
     save_progress,
     save_workout,
 )
-from .programs import programs
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("user"):
+            flash("Login required", "warning")
+            return redirect(url_for("main.login"))
+        return f(*args, **kwargs)
+
+    return decorated_function
+
 
 main = Blueprint("main", __name__)
 
 
+@main.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        if check_password(username, password):
+            user = get_user_by_username(username)
+            session["user"] = user["username"]
+            session["role"] = user["role"]
+            flash("Logged in successfully!", "success")
+            return redirect(url_for("main.index"))
+        else:
+            flash("Invalid username or password", "danger")
+    return render_template("login.html")
+
+
+@main.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out", "info")
+    return redirect(url_for("main.login"))
+
+
 @main.route("/", methods=["GET", "POST"])
+@login_required
 def index():
     selected_program = None
     workout = None
