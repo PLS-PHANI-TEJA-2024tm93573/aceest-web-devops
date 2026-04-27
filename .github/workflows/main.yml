@@ -32,11 +32,17 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run Linter
-        run: |
-          pip install flake8
-          # exclude tests directory from linting (tests may intentionally contain test-only styles)
-          flake8 --exclude=tests .
+      - name: Analyze with SonarQube
+        uses: SonarSource/sonarqube-scan-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=aceest
+            -Dsonar.sources=.
+            -Dsonar.python.coverage.reportPaths=coverage.xml
 
 
 
