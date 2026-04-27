@@ -39,11 +39,10 @@ jobs:
           java-version: '17'
 
       - name: Analyze with SonarQube
-        uses: SonarSource/sonarqube-scan-action@v1
+        uses: SonarSource/sonarcloud-github-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
             -Dsonar.projectKey=aceest
