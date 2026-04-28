@@ -64,9 +64,7 @@ jobs:
               
             RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest")
-
-            echo "Response: $RESPONSE"
-            
+            STATUS=$(echo "$RESPONSE" | jq -r '.projectStatus.status' 2>/dev/null)\
           if [ "$STATUS" != "OK" ]; then
             echo " Quality Gate FAILED"
             exit 1
