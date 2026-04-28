@@ -3,6 +3,7 @@
 <h2>Workout History for {{ client_name }}</h2>
 {% if history and history|length > 0 %}
 <table>
+    <caption>Workout history for {{ client_name }} — each row shows the date, workout type, duration (minutes), and any notes.</caption>
     <thead>
         <tr>
             <th>Date</th>

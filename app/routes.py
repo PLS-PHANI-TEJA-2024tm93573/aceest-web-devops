@@ -53,6 +53,10 @@ def login_required(f):
 
 main = Blueprint("main", __name__)
 
+# Use a single constant for the index endpoint string to avoid duplication
+INDEX_ENDPOINT = "main.index"
+CLIENT_NOT_FOUND_MSG = "Client not found"
+
 
 @main.route("/login", methods=["GET", "POST"])
 def login():
@@ -64,7 +68,7 @@ def login():
             session["user"] = user["username"]
             session["role"] = user["role"]
             flash("Logged in successfully!", "success")
-            return redirect(url_for("main.index"))
+            return redirect(url_for(INDEX_ENDPOINT))
         else:
             flash("Invalid username or password", "danger")
     return render_template("login.html")
@@ -197,7 +201,7 @@ def save_progress_route():
 
     if not name:
         flash("Client name required to save progress", "error")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
 
     try:
         adherence_i = int(adherence) if adherence not in (None, "") else 0
@@ -218,7 +222,7 @@ def save_progress_route():
         add_client(client)
 
     flash("Weekly progress logged", "success")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX_ENDPOINT))
 
 
 @main.route("/export_csv")
@@ -271,7 +275,7 @@ def progress_chart(client_name):
     progress = get_progress(client_name)
     if not progress:
         flash("No progress data available for this client", "info")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
 
     weeks = [p["week"] for p in reversed(progress)]
     adherence = [p["adherence"] for p in reversed(progress)]
@@ -304,7 +308,7 @@ def weight_trend_chart(client_name):
     progress = get_progress(client_name)
     if not progress:
         flash("No progress data available for this client", "info")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
 
     # In a real implementation, fetch weight by week/date from metrics table
     # Here, just plot adherence as a placeholder
@@ -339,8 +343,8 @@ def bmi_info(client_name):
     clients = get_clients()
     client = next((c for c in clients if c.get("name") == client_name), None)
     if not client:
-        flash("Client not found", "error")
-        return redirect(url_for("main.index"))
+        flash(CLIENT_NOT_FOUND_MSG, "error")
+        return redirect(url_for(INDEX_ENDPOINT))
     height = client.get("height")
     weight = client.get("weight")
     try:
@@ -351,7 +355,7 @@ def bmi_info(client_name):
         w = 0
     if h <= 0 or w <= 0:
         flash("Enter valid height and weight for BMI calculation", "warning")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
     h_m = h / 100.0
     bmi = w / (h_m * h_m)
     bmi = round(bmi, 1)
@@ -368,7 +372,7 @@ def bmi_info(client_name):
         category = "Obese"
         risk = "Higher risk; prioritize fat loss, consistency, and supervision."
     flash(f"BMI for {client_name}: {bmi} ({category}) - {risk}", "info")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX_ENDPOINT))
 
 
 # Workout history route
@@ -390,14 +394,14 @@ def log_workout():
     notes = request.form.get("workout_notes")
     if not client_name or not date or not workout_type:
         flash("Client name, date, and workout type are required.", "error")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
     try:
         duration = int(duration_min) if duration_min else 0
     except ValueError:
         duration = 0
     save_workout(client_name, date, workout_type, duration, notes or "")
     flash("Workout logged successfully.", "success")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX_ENDPOINT))
 
 
 # Log metrics route
@@ -410,7 +414,7 @@ def log_metrics():
     bodyfat = request.form.get("metrics_bodyfat")
     if not client_name or not date:
         flash("Client name and date are required.", "error")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
     try:
         weight_f = float(weight) if weight else 0.0
     except ValueError:
@@ -425,7 +429,7 @@ def log_metrics():
         bodyfat_f = 0.0
     save_metrics(client_name, date, weight_f, waist_f, bodyfat_f)
     flash("Body metrics logged successfully.", "success")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX_ENDPOINT))
 
 
 @main.route("/export_pdf/<client_name>")
@@ -435,11 +439,11 @@ def export_pdf(client_name):
         from fpdf import FPDF
     except ImportError:
         flash("FPDF not installed. Please install with 'pip install fpdf'", "danger")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
     client = get_client_by_name(client_name)
     if not client:
-        flash("Client not found", "danger")
-        return redirect(url_for("main.index"))
+        flash(CLIENT_NOT_FOUND_MSG, "danger")
+        return redirect(url_for(INDEX_ENDPOINT))
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
@@ -475,8 +479,8 @@ def delete_client(client_name):
 
     client = get_client_by_name(client_name)
     if not client:
-        flash("Client not found", "danger")
-        return redirect(url_for("main.index"))
+        flash(CLIENT_NOT_FOUND_MSG, "danger")
+        return redirect(url_for(INDEX_ENDPOINT))
 
     from app.models import get_db_conn
 
@@ -486,7 +490,7 @@ def delete_client(client_name):
     conn.commit()
     conn.close()
     flash(f"Client '{client_name}' deleted.", "success")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX_ENDPOINT))
 
 
 @main.route("/edit_client/<client_name>", methods=["GET", "POST"])
@@ -496,8 +500,8 @@ def edit_client(client_name):
 
     client = get_client_by_name(client_name)
     if not client:
-        flash("Client not found", "danger")
-        return redirect(url_for("main.index"))
+        flash(CLIENT_NOT_FOUND_MSG, "danger")
+        return redirect(url_for(INDEX_ENDPOINT))
     if request.method == "POST":
         # Update client with form data
         updated = dict(client)
@@ -517,5 +521,5 @@ def edit_client(client_name):
             updated[field] = val
         add_client(updated)
         flash(f"Client '{client_name}' updated.", "success")
-        return redirect(url_for("main.index"))
+        return redirect(url_for(INDEX_ENDPOINT))
     return render_template("edit_client.html", client=client)
