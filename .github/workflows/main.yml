@@ -49,6 +49,30 @@ jobs:
             -Dsonar.projectKey=aceest
             -Dsonar.sources=.
             -Dsonar.python.coverage.reportPaths=coverage.xml
+      - name: SonarQube Quality Gate Check
+        run: |
+         echo "Waiting for SonarQube Quality Gate..."
+
+          STATUS="PENDING"
+      
+          while [ "$STATUS" = "PENDING" ]; do
+            sleep 5
+      
+            STATUS=$(curl -s \
+              -u "${{ secrets.SONAR_TOKEN }}:" \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest" \
+              | jq -r '.projectStatus.status')
+      
+            echo "Current status: $STATUS"
+          done
+      
+          if [ "$STATUS" != "OK" ]; then
+            echo " Quality Gate FAILED"
+            exit 1
+          fi
+      
+          echo "Quality Gate PASSED"
+          
 
 
 
