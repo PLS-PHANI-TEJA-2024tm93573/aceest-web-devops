@@ -15,7 +15,7 @@ on:
 jobs:
 
   build-and-lint:
-    name: Build & Lint
+    name: Build and Lint ( Sonar Qube Scan ) 
     runs-on: self-hosted
 
     steps:
