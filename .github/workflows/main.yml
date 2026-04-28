@@ -48,6 +48,7 @@ jobs:
           args: >
             -Dsonar.projectKey=aceest
             -Dsonar.sources=.
+            -Dsonar.exclusions=tests/**
             -Dsonar.python.coverage.reportPaths=coverage.xml
             
       - name: SonarQube Quality Gate Check
