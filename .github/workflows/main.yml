@@ -58,10 +58,7 @@ jobs:
           while [ "$STATUS" = "PENDING" ]; do
             sleep 5
       
-            STATUS=$(curl -s \
-              -u "${{ secrets.SONAR_TOKEN }}:" \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest" \
-              | jq -r '.projectStatus.status')
+
               
             RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest")
