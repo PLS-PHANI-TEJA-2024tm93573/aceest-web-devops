@@ -53,21 +53,14 @@ jobs:
         run: |
          echo "Waiting for SonarQube Quality Gate..."
 
-          STATUS="PENDING"
-      
-          while [ "$STATUS" = "PENDING" ]; do
-            sleep 5
-      
+          STATUS="PENDING"    
 
               
             RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest")
 
             echo "Response: $RESPONSE"
-      
             
-          done
-      
           if [ "$STATUS" != "OK" ]; then
             echo " Quality Gate FAILED"
             exit 1
