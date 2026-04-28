@@ -62,8 +62,13 @@ jobs:
               -u "${{ secrets.SONAR_TOKEN }}:" \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest" \
               | jq -r '.projectStatus.status')
+              
+            RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest")
+
+            echo "Response: $RESPONSE"
       
-            echo "Current status: $STATUS"
+            
           done
       
           if [ "$STATUS" != "OK" ]; then
