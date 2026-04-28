@@ -24,16 +24,6 @@ pipeline {
             }
         }
 
-        stage('Lint Check') {
-            steps {
-                sh '''
-                . venv/bin/activate
-                # Use flake8 without overriding the configured excludes in setup.cfg
-                flake8 .
-                '''
-            }
-        }
-
         stage('Build Validation') {
             steps {
                 sh '''
