@@ -54,7 +54,8 @@ jobs:
          echo "Waiting for SonarQube Quality Gate..."
 
           STATUS="PENDING"    
-
+          echo "Host URL: ${{ secrets.SONAR_HOST_URL }}"
+          echo "Token length: ${#SONAR_TOKEN}"
               
             RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/project_status?projectKey=aceest")
