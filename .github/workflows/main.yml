@@ -199,3 +199,31 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
+
+  
+  deploy-to-kubernetes:
+    name: Deploy to Kubernetes (Only Main Branch)
+    runs-on: self-hosted
+    needs: [jenkins-trigger-and-wait]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Kubernetes Context
+        run: | 
+          kubectl config use-context minikube
+
+      - name: Update Image in Deployment
+        run: |
+          kubectl set image deployment/aceest-app aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:dev-latest --record
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl apply -f Deployment/deployment.yaml
+          kubectl apply -f Deployment/service.yaml
+      
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/aceest-app
+      

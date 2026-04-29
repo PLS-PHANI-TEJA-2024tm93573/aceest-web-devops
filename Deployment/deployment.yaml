@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aceest
+  template:
+    metadata:
+      labels:
+        app: aceest
+    spec:
+      containers:
+        - name: aceest-container
+          image: plsphaniteja2024tm93573/aceest-web-app-2024tm93573:dev-latest
+          ports:
+            - containerPort: 5000
