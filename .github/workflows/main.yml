@@ -243,14 +243,14 @@ jobs:
         run: | 
           kubectl config use-context minikube
 
-      - name: Update Image in Deployment
-        run: |
-          kubectl set image deployment/aceest-app aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG --record
-
-      - name: Apply Kubernetes Manifests
+      - name: Apply Base Manifests
         run: |
           kubectl apply -f Deployment/deployment.yaml
           kubectl apply -f Deployment/service.yaml
+
+      - name: Update Image in Deployment
+        run: |
+          kubectl set image deployment/aceest-app aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG --record
       
       - name: Verify Deployment
         run: |
