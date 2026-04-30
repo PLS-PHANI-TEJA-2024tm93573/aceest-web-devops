@@ -251,9 +251,9 @@ jobs:
 
       - name: Deploy Based on Strategy
         run: |
-          echo "Using strategy: $STRATEGY"
+          echo "Using strategy: $DEPLOYMENT_STRATEGY"
 
-          if [ "$STRATEGY" = "blue-green" ]; then
+          if [ "$DEPLOYMENT_STRATEGY" = "blue-green" ]; then
 
             CURRENT=$(kubectl get svc aceest-service -o jsonpath='{.spec.selector.version}')
     
@@ -280,7 +280,7 @@ jobs:
             kubectl patch service aceest-service \
             -p "{\"spec\":{\"selector\":{\"app\":\"aceest\",\"version\":\"$TARGET\"}}}"
 
-          elif [ "$STRATEGY" = "canary" ]; then
+          elif [ "$DEPLOYMENT_STRATEGY" = "canary" ]; then
 
             echo "Canary Deployment"
 
@@ -291,7 +291,7 @@ jobs:
 
             kubectl rollout status deployment/aceest-canary
 
-          elif [ "$STRATEGY" = "shadow" ]; then
+          elif [ "$DEPLOYMENT_STRATEGY" = "shadow" ]; then
 
             echo "Shadow Deployment"
 
