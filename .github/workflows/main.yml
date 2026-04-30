@@ -270,7 +270,7 @@ jobs:
             echo "Current: $CURRENT"
             echo "Target: $TARGET"
 
-            kubectl apply -f Deployment/blue-green/
+            kubectl apply -f Deployment/blue-green-deployment/
 
             kubectl set image deployment/aceest-$TARGET \
             aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
@@ -284,7 +284,7 @@ jobs:
 
             echo "Canary Deployment"
 
-            kubectl apply -f Deployment/canary/
+            kubectl apply -f Deployment/canary-deployment/
 
             kubectl set image deployment/aceest-canary \
             aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
@@ -295,7 +295,7 @@ jobs:
 
             echo "Shadow Deployment"
 
-            kubectl apply -f Deployment/shadow/
+            kubectl apply -f Deployment/shadow-deployment/
 
             kubectl set image deployment/aceest-shadow \
             aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
@@ -304,8 +304,8 @@ jobs:
 
             echo "🔄 Rolling Deployment"
 
-            kubectl apply -f Deployment/deployment.yaml
-            kubectl apply -f Deployment/service.yaml
+            kubectl apply -f Deployment/base-deployment/deployment.yaml
+            kubectl apply -f Deployment/base-deployment/service.yaml
 
             kubectl set image deployment/aceest-app \
             aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
