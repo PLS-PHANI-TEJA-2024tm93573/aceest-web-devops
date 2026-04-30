@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aceest-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/mirror-target: http://aceest-shadow-service
+    nginx.ingress.kubernetes.io/mirror-request-body: "on"
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aceest-service   # LIVE service
+            port:
+              number: 80

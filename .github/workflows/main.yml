@@ -285,6 +285,10 @@ jobs:
 
             echo "Canary Deployment"
 
+            CURRENT=$(kubectl get svc aceest-service -o jsonpath='{.spec.selector.version}')
+
+            kubectl scale deployment aceest-$CURRENT --replicas=5
+
             kubectl apply -f Deployment/canary-deployment/
 
             kubectl set image deployment/aceest-canary \
@@ -300,6 +304,8 @@ jobs:
 
             kubectl set image deployment/aceest-shadow \
             aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
+
+            kubectl rollout status deployment/aceest-shadow
 
           else
 
