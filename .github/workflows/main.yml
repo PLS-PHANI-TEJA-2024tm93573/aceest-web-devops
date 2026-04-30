@@ -285,10 +285,6 @@ jobs:
 
             echo "Canary Deployment"
 
-            CURRENT=$(kubectl get svc aceest-service -o jsonpath='{.spec.selector.version}')
-
-            kubectl scale deployment aceest-$CURRENT --replicas=5
-
             kubectl apply -f Deployment/canary-deployment/
 
             kubectl set image deployment/aceest-canary \
