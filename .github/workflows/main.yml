@@ -17,6 +17,10 @@ on:
         tag:
           description: 'Tag To Deploy'
           required: true
+        deployment_strategy:
+          description: 'Deployment Strategy ( rolling, blue-green, canary | shadow)'
+          required: true
+          default: rolling
   
 
 jobs:
@@ -230,29 +234,83 @@ jobs:
         with:
           ref: main
 
-      - name: Set Tag
+      - name: Set Tag and Deployment Strategy
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG=${{ github.event.inputs.tag }}
+            DEPLOYMENT_STRATEGY=${{ github.event.inputs.deployment_strategy }}
           else
             TAG=${GITHUB_REF#refs/tags/}
+            DEPLOYMENT_STRATEGY="rolling"
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
-
+          echo "DEPLOYMENT_STRATEGY=$DEPLOYMENT_STRATEGY" >> $GITHUB_ENV
       - name: Set Kubernetes Context
         run: | 
           kubectl config use-context minikube
 
-      - name: Apply Base Manifests
+      - name: Deploy Based on Strategy
         run: |
-          kubectl apply -f Deployment/deployment.yaml
-          kubectl apply -f Deployment/service.yaml
+          echo "Using strategy: $STRATEGY"
 
-      - name: Update Image in Deployment
-        run: |
-          kubectl set image deployment/aceest-app aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG --record
-      
-      - name: Verify Deployment
-        run: |
-          kubectl rollout status deployment/aceest-app
-      
+          if [ "$STRATEGY" = "blue-green" ]; then
+
+            CURRENT=$(kubectl get svc aceest-service -o jsonpath='{.spec.selector.version}')
+    
+            if [ -z "$CURRENT" ]; then
+              echo "No existing deployment. Defaulting BLUE"
+              CURRENT="none"
+              TARGET="blue"
+            elif [ "$CURRENT" = "blue" ]; then
+              TARGET="green"
+            else
+              TARGET="blue"
+            fi
+
+            echo "Current: $CURRENT"
+            echo "Target: $TARGET"
+
+            kubectl apply -f Deployment/blue-green/
+
+            kubectl set image deployment/aceest-$TARGET \
+            aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
+
+            kubectl rollout status deployment/aceest-$TARGET
+
+            kubectl patch service aceest-service \
+            -p "{\"spec\":{\"selector\":{\"app\":\"aceest\",\"version\":\"$TARGET\"}}}"
+
+          elif [ "$STRATEGY" = "canary" ]; then
+
+            echo "Canary Deployment"
+
+            kubectl apply -f Deployment/canary/
+
+            kubectl set image deployment/aceest-canary \
+            aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
+
+            kubectl rollout status deployment/aceest-canary
+
+          elif [ "$STRATEGY" = "shadow" ]; then
+
+            echo "Shadow Deployment"
+
+            kubectl apply -f Deployment/shadow/
+
+            kubectl set image deployment/aceest-shadow \
+            aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
+
+          else
+
+            echo "🔄 Rolling Deployment"
+
+            kubectl apply -f Deployment/deployment.yaml
+            kubectl apply -f Deployment/service.yaml
+
+            kubectl set image deployment/aceest-app \
+            aceest-container=plsphaniteja2024tm93573/aceest-web-app-2024tm93573:$TAG
+
+            kubectl rollout status deployment/aceest-app
+
+          fi
+            
