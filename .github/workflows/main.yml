@@ -239,9 +239,9 @@ jobs:
           fi
           echo "TAG=$TAG" >> $GITHUB_ENV
 
-            - name: Set Kubernetes Context
-              run: | 
-                kubectl config use-context minikube
+      - name: Set Kubernetes Context
+        run: | 
+          kubectl config use-context minikube
 
       - name: Update Image in Deployment
         run: |
